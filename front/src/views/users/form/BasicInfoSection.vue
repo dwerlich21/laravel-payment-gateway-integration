@@ -83,15 +83,15 @@
                                 placeholder="Nome"
                                 required
                                 :value="formData.name"
-                                :state="getFieldState('basicInfo.name')"
+                                :state="getFieldState('name')"
                                 aria-describedby="basicInfo-name-error-feedback"
                                 @input="updateField('name', $event)"
                             />
                             <BFormInvalidFeedback
-                                v-if="getFieldError('basicInfo.name')"
+                                v-if="getFieldError('name')"
                                 id="basicInfo-name-error-feedback"
                             >
-                                {{ getFieldError('basicInfo.name') }}
+                                {{ getFieldError('name') }}
                             </BFormInvalidFeedback>
                         </BCol>
 
@@ -109,15 +109,15 @@
                                 placeholder="E-mail"
                                 required
                                 :value="formData.email"
-                                :state="getFieldState('basicInfo.email')"
+                                :state="getFieldState('email')"
                                 aria-describedby="basicInfo-email-error-feedback"
                                 @input="updateField('email', $event)"
                             />
                             <BFormInvalidFeedback
-                                v-if="getFieldError('basicInfo.email')"
+                                v-if="getFieldError('email')"
                                 id="basicInfo-email-error-feedback"
                             >
-                                {{ getFieldError('basicInfo.email') }}
+                                {{ getFieldError('email') }}
                             </BFormInvalidFeedback>
                         </BCol>
 
@@ -136,59 +136,16 @@
                                 placeholder="___.___.___-__"
                                 required
                                 :value="formData.cpf"
-                                :state="getFieldState('basicInfo.cpf')"
+                                :state="getFieldState('cpf')"
                                 aria-describedby="basicInfo-cpf-error-feedback"
                                 @input="updateField('cpf', $event)"
                             />
                             <BFormInvalidFeedback
-                                v-if="getFieldError('basicInfo.cpf')"
+                                v-if="getFieldError('cpf')"
                                 id="basicInfo-cpf-error-feedback"
                             >
-                                {{ getFieldError('basicInfo.cpf') }}
+                                {{ getFieldError('cpf') }}
                             </BFormInvalidFeedback>
-                        </BCol>
-
-                        <BCol
-                            md="4"
-                            class="mb-3"
-                        >
-                            <label for="position">Cargo
-                                <span class="text-danger">*</span>
-                            </label>
-                            <BFormInput
-                                id="position"
-                                name="position"
-                                type="text"
-                                placeholder="Nome"
-                                required
-                                :value="formData.position"
-                                :state="getFieldState('basicInfo.position')"
-                                aria-describedby="basicInfo-position-error-feedback"
-                                @input="updateField('position', $event)"
-                            />
-                            <BFormInvalidFeedback
-                                v-if="getFieldError('basicInfo.position')"
-                                id="basicInfo-position-error-feedback"
-                            >
-                                {{ getFieldError('basicInfo.position') }}
-                            </BFormInvalidFeedback>
-
-                        </BCol>
-
-                        <BCol
-                            md="4"
-                            class="mb-3"
-                        >
-                            <BaseMultiselect
-                                v-model="formData.type"
-                                :options="accessLevelOptions"
-                                :create-option="false"
-                                :disabled="disabled"
-                                required
-                                label="Nível de Acesso"
-                                placeholder="Selecione o nível de acesso"
-                                :errors="getFieldErrors('basicInfo.type')"
-                            />
                         </BCol>
 
                         <BCol
@@ -206,15 +163,15 @@
                                 placeholder="(99) 99999-9999"
                                 required
                                 :value="formData.phone"
-                                :state="getFieldState('basicInfo.phone')"
+                                :state="getFieldState('phone')"
                                 aria-describedby="basicInfo-phone-error-feedback"
                                 @input="updateField('phone', $event)"
                             />
                             <BFormInvalidFeedback
-                                v-if="getFieldError('basicInfo.phone')"
+                                v-if="getFieldError('phone')"
                                 id="basicInfo-phone-error-feedback"
                             >
-                                {{ getFieldError('basicInfo.phone') }}
+                                {{ getFieldError('phone') }}
                             </BFormInvalidFeedback>
                         </BCol>
 
@@ -238,7 +195,7 @@
                                     placeholder="Senha"
                                     :required="formData.id === 0"
                                     :value="formData.password"
-                                    :state="getFieldState('basicInfo.password')"
+                                    :state="getFieldState('password')"
                                     aria-describedby="basicInfo-password-error-feedback"
                                     @input="updateField('password', $event)"
                                 />
@@ -252,10 +209,10 @@
                             </div>
                             <small class="text-muted">Mínimo 8 caracteres</small>
                             <BFormInvalidFeedback
-                                v-if="getFieldError('basicInfo.password')"
+                                v-if="getFieldError('password')"
                                 id="basicInfo-password-error-feedback"
                             >
-                                {{ getFieldError('basicInfo.password') }}
+                                {{ getFieldError('password') }}
                             </BFormInvalidFeedback>
                         </BCol>
                     </BRow>

@@ -9,7 +9,10 @@
                 class="mb-3"
             >
                 <BCard no-body>
-                    <BCardHeader class="border border-dashed border-end-0 border-start-0 border-top-0">
+                    <BCardHeader
+                        v-if="titleHeader"
+                        class="border border-dashed border-end-0 border-start-0 border-top-0"
+                    >
                         <div class="d-md-flex align-items-center">
                             <h5 class="card-title mb-0 flex-grow-1">
                                 {{ titleHeader }}
@@ -45,7 +48,8 @@ defineProps({
     },
     titleHeader: {
         type: String,
-        required: true,
+        required: false,
+        default: null
     },
     isEditing: {
         type: Boolean,

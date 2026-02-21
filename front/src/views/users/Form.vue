@@ -1,6 +1,6 @@
 <template>
     <PageForm
-        :title="formData.id ? `Editar Usuário: ${formData.basicInfo?.name || 'Usuário'}` : 'Novo Usuário'"
+        :title="formData.id ? `Editar Usuário: ${formData?.name || 'Usuário'}` : 'Novo Usuário'"
         :title-header="formData.id ? 'Edição de Usuário' : 'Cadastro de Usuário'"
         :session="session"
         @submit-form="submitForm"
@@ -10,16 +10,16 @@
                 <form id="form" class="mb-3">
                     <!-- Seção 1: Informações Básicas -->
                     <BasicInfoSection
-                        v-model:form-data="formData.basicInfo"
+                        v-model:form-data="formData"
                         :access-level-options="accessLevels"
-                        :data="formData.basicInfo"
+                        :data="formData"
                         :errors="errors"
                         :show-password-field="showPasswordField"
                         :show-password="showPassword"
                         @toggle-password="showPassword = !showPassword"
                         @handle-image="handleImage"
                         @set-image="setImage"
-                        @reset-image="resetImageBlob('user-img-file-input', formData.basicInfo, 'img')"
+                        @reset-image="resetImageBlob('user-img-file-input', formData, 'img')"
                     />
                     <!-- Seção 2: Endereço -->
                     <AddressSection
@@ -81,10 +81,10 @@ async function loadUserData(id) {
         formData.value = {
             ...formData.value,
             ...data,
-            id: data.basicInfo.id
+            id: data.id
         }
 
-        if(data.basicInfo.avatar) formData.value.basicInfo.avatar = `${env.url}${data.basicInfo.avatar}`
+        if(data.avatar) formData.value.avatar = `${env.url}${data.avatar}`
 
     } catch (error) {
         console.error('Erro ao carregar usuário:', error);
@@ -94,14 +94,14 @@ async function loadUserData(id) {
 
 async function handleImage(event) {
     try {
-        formData.value.basicInfo = await handleImg(event, 600, 600, formData.value.basicInfo, 'img');
+        formData.value = await handleImg(event, 600, 600, formData.value, 'img');
     } catch (error) {
         console.error("Erro ao carregar a imagem:", error);
     }
 }
 
 function setImage(blob) {
-    formData.value.basicInfo = setImageBlob(blob, formData.value.basicInfo, 'img');
+    formData.value = setImageBlob(blob, formData.value, 'img');
 }
 
 async function submitForm() {

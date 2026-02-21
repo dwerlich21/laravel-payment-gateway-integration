@@ -1,7 +1,7 @@
 <template>
     <PageForm
         title="Meu Perfil"
-        title-header="Meu Perfil"
+
         @submit-form="submitForm"
     >
         <template #form>
