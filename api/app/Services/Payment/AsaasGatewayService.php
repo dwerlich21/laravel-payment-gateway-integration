@@ -5,57 +5,140 @@ namespace App\Services\Payment;
 use App\Contracts\PaymentGatewayInterface;
 use App\Exceptions\PaymentException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 /**
  * Serviço de integração com o Asaas.
  *
- * Implementa a interface de gateway para o Asaas. A implementação real
- * das chamadas à API será feita nas próximas tasks — por enquanto os
- * métodos contêm stubs que indicam a pendência de implementação.
+ * Implementa a interface de gateway utilizando a API REST do Asaas
+ * para criação de cobranças (boleto, pix, cartão) e consulta de status.
  */
 class AsaasGatewayService implements PaymentGatewayInterface
 {
+    private string $apiKey;
+
+    private string $webhookToken;
+
+    private string $baseUrl;
+
+    public function __construct(string $apiKey, string $webhookToken, bool $sandbox = true)
+    {
+        $this->apiKey = $apiKey;
+        $this->webhookToken = $webhookToken;
+        $this->baseUrl = $sandbox
+            ? 'https://sandbox.asaas.com/api/v3'
+            : 'https://api.asaas.com/api/v3';
+    }
+
     /**
      * Cria uma cobrança no Asaas.
      *
-     * Na implementação final, usará a API do Asaas para criar uma
-     * cobrança (boleto, pix ou cartão) e retornará os dados relevantes.
+     * Envia POST para /payments com os dados do cliente, tipo de cobrança,
+     * valor e descrição. Retorna o ID externo, status e URL do boleto/invoice.
      */
     public function createCharge(array $data): array
     {
-        throw new PaymentException('Implementação Asaas pendente: createCharge');
+        try {
+            $response = Http::withHeaders([
+                'access_token' => $this->apiKey,
+            ])->post("{$this->baseUrl}/payments", [
+                'customer' => $data['customer'],
+                'billingType' => $data['billing_type'] ?? 'UNDEFINED',
+                'value' => $data['amount'],
+                'description' => $data['description'] ?? 'Pagamento',
+                'dueDate' => $data['due_date'] ?? now()->addDays(3)->format('Y-m-d'),
+            ]);
+
+            if ($response->failed()) {
+                $errors = $response->json('errors.0.description', 'Erro desconhecido');
+                throw new PaymentException("Erro na API do Asaas: {$errors}");
+            }
+
+            $body = $response->json();
+
+            return [
+                'external_id' => $body['id'],
+                'status' => 'pending',
+                'invoice_url' => $body['invoiceUrl'] ?? null,
+            ];
+        } catch (PaymentException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            throw new PaymentException("Erro ao criar cobrança no Asaas: {$e->getMessage()}");
+        }
     }
 
     /**
      * Consulta o status de uma cobrança no Asaas pelo ID externo.
      *
-     * Na implementação final, consultará a API do Asaas para obter
-     * o status atual da cobrança.
+     * Mapeia os status do Asaas para o formato interno:
+     * RECEIVED/CONFIRMED → paid, OVERDUE/REFUNDED → failed, demais → pending.
      */
     public function getChargeStatus(string $externalId): string
     {
-        throw new PaymentException('Implementação Asaas pendente: getChargeStatus');
+        try {
+            $response = Http::withHeaders([
+                'access_token' => $this->apiKey,
+            ])->get("{$this->baseUrl}/payments/{$externalId}");
+
+            if ($response->failed()) {
+                throw new PaymentException('Erro ao consultar cobrança no Asaas.');
+            }
+
+            $status = $response->json('status');
+
+            return $this->mapAsaasStatus($status);
+        } catch (PaymentException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            throw new PaymentException("Erro ao consultar status no Asaas: {$e->getMessage()}");
+        }
     }
 
     /**
-     * Normaliza o payload do webhook recebido do Asaas.
+     * Normaliza o payload do webhook do Asaas para o formato interno.
      *
-     * O Asaas envia notificações via webhook com uma estrutura própria.
-     * Este método converterá o payload para o formato interno padronizado.
+     * Extrai dados de $payload['payment']: ID externo, status normalizado,
+     * valor e data de pagamento.
      */
     public function normalizeWebhookPayload(array $payload): array
     {
-        throw new PaymentException('Implementação Asaas pendente: normalizeWebhookPayload');
+        try {
+            $payment = $payload['payment'] ?? [];
+
+            return [
+                'external_id' => $payment['id'] ?? null,
+                'status' => $this->mapAsaasStatus($payment['status'] ?? ''),
+                'amount' => $payment['value'] ?? 0,
+                'paid_at' => $payment['paymentDate'] ?? null,
+            ];
+        } catch (\Exception $e) {
+            throw new PaymentException("Erro ao normalizar webhook do Asaas: {$e->getMessage()}");
+        }
     }
 
     /**
      * Valida a assinatura do webhook do Asaas.
      *
-     * Usa o token de webhook configurado para verificar a autenticidade
-     * da requisição recebida do Asaas.
+     * Compara o header asaas-access-token da requisição com o
+     * webhook_token configurado para verificar a autenticidade.
      */
     public function validateWebhookSignature(Request $request): bool
     {
-        throw new PaymentException('Implementação Asaas pendente: validateWebhookSignature');
+        $token = $request->header('asaas-access-token', '');
+
+        return hash_equals($this->webhookToken, $token);
+    }
+
+    /**
+     * Mapeia o status do Asaas para o formato interno padronizado.
+     */
+    private function mapAsaasStatus(string $status): string
+    {
+        return match ($status) {
+            'RECEIVED', 'CONFIRMED', 'RECEIVED_IN_CASH' => 'paid',
+            'OVERDUE', 'REFUNDED', 'REFUND_REQUESTED', 'CHARGEBACK' => 'failed',
+            default => 'pending',
+        };
     }
 }

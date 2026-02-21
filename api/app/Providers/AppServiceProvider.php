@@ -17,11 +17,22 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(PaymentManager::class);
 
         $this->app->bind(StripeGatewayService::class, function () {
-            return new StripeGatewayService();
+            $config = config('payment.gateways.stripe');
+
+            return new StripeGatewayService(
+                $config['secret_key'] ?? '',
+                $config['webhook_secret'] ?? ''
+            );
         });
 
         $this->app->bind(AsaasGatewayService::class, function () {
-            return new AsaasGatewayService();
+            $config = config('payment.gateways.asaas');
+
+            return new AsaasGatewayService(
+                $config['api_key'] ?? '',
+                $config['webhook_token'] ?? '',
+                $config['sandbox'] ?? true
+            );
         });
     }
 
