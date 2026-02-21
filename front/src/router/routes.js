@@ -5,24 +5,8 @@ export default [
         component: () => import("@/views/account/Login.vue"),
         meta: {
             title: "Login",
-            // beforeResolve(routeTo, routeFrom, next) {
-            //     if (store.getters["auth/loggedIn"]) {
-            //         next({name: "dashboard"});
-            //     } else {
-            //         next();
-            //     }
-            // },
         },
     },
-
-    // {
-    //     path: "/credenciais",
-    //     name: "credentials",
-    //     component: () => import("@/views/account/credentials.vue"),
-    //     meta: {
-    //         title: "Verificando Credenciais",
-    //     },
-    // },
 
     {
         path: "/esqueceu-senha",
@@ -52,7 +36,7 @@ export default [
         path: "/",
         name: "dashboard",
         meta: {
-            title: "Dashboard",
+            title: "Produtos",
         },
         component: () => import("@/views/dashboard/Index.vue"),
     },
@@ -71,10 +55,7 @@ export default [
     {
         path: "/produtos",
         name: "products",
-        meta: {
-            title: "Produtos",
-        },
-        component: () => import("@/views/products/Products.vue"),
+        redirect: {name: "dashboard"},
     },
     {
         path: "/checkout/:id",

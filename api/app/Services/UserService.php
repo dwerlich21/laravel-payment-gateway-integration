@@ -45,10 +45,7 @@ class UserService extends BaseService
             $user->update(['avatar' => $userData['avatar']]);
         }
 
-        $this->saveAddress($user, $data);
-        $this->savePermissions($user, $data);
-
-        return $user->load(['address', 'permissions']);
+        return $user;
     }
 
     /**
@@ -73,46 +70,7 @@ class UserService extends BaseService
         // Atualizar usuário
         $user->update($userData);
 
-        $this->saveAddress($user, $data);
-        $this->savePermissions($user, $data);
-
-        return $user->load(['address', 'permissions']);
-    }
-
-    private function savePermissions($user, $data): void
-    {
-        $permissions = $data['permissions'] ?? [];
-
-        if (!empty($permissions)) {
-            // Converte para array de inteiros se vier como strings
-            $permissionIds = array_map('intval', $permissions);
-            $user->permissions()->sync($permissionIds);
-        }
-    }
-
-    private function saveAddress($user, $data): void
-    {
-        // Criar ou atualizar endereço se existir
-        $addressData = $data['address'] ?? null;
-        if ($addressData && $this->hasNonEmptyValues($addressData)) {
-            // Converter keys do formato camelCase para snake_case se necessário
-            $addressFormatted = [
-                'zip_code'     => $addressData['zipCode'] ?? $addressData['zip_code'] ?? null,
-                'uf'           => $addressData['uf'] ?? null,
-                'city'         => $addressData['city'] ?? null,
-                'neighborhood' => $addressData['neighborhood'] ?? null,
-                'address'      => $addressData['address'] ?? null,
-                'number'       => $addressData['number'] ?? null,
-                'complement'   => $addressData['complement'] ?? null,
-                'tenant_id'    => auth()->user()->tenant_id ?? null,
-            ];
-
-            // Usar updateOrCreate para evitar duplicatas
-            $user->address()->updateOrCreate(
-                ['user_id' => $user->id],
-                $addressFormatted
-            );
-        }
+        return $user;
     }
 
     public function show($id): mixed
@@ -125,35 +83,17 @@ class UserService extends BaseService
      */
     private function prepareUserData(array $data, bool $isUpdate = false): array
     {
-        // Se os dados vierem em basicInfo, extrai eles
-        if (isset($data['basicInfo'])) {
-            $basicInfo = $data['basicInfo'];
-            $userData = [
-                'name'     => $basicInfo['name'] ?? null,
-                'email'    => $basicInfo['email'] ?? null,
-                'cpf'      => $basicInfo['cpf'] ?? null,
-                'type'     => $basicInfo['type'] ?? null,
-                'position' => $basicInfo['position'] ?? null,
-                'phone'    => $basicInfo['phone'] ?? null,
-                'active'   => $basicInfo['active'] ?? $data['active'] ?? true,
-            ];
 
-            // Password pode estar em basicInfo ou na raiz
-            $password = $basicInfo['password'] ?? $data['password'] ?? null;
-        } else {
-            // Dados flat (sem basicInfo)
-            $userData = [
-                'name'     => $data['name'] ?? null,
-                'email'    => $data['email'] ?? null,
-                'cpf'      => $data['cpf'] ?? null,
-                'type'     => $data['type'] ?? null,
-                'position' => $data['position'] ?? null,
-                'phone'    => $data['phone'] ?? null,
-                'active'   => $data['active'] ?? true,
-            ];
-
-            $password = $data['password'] ?? null;
-        }
+        // Dados flat (sem basicInfo)
+        $userData = [
+            'name'     => $data['name'] ?? null,
+            'email'    => $data['email'] ?? null,
+            'cpf'      => $data['cpf'] ?? null,
+            'type'     => $data['type'] ?? null,
+            'position' => $data['position'] ?? null,
+            'phone'    => $data['phone'] ?? null,
+            'active'   => $data['active'] ?? true,
+        ];
 
         // Hash da senha se fornecida
         if (!empty($password)) {
@@ -161,11 +101,6 @@ class UserService extends BaseService
         } elseif (!$isUpdate) {
             // Senha padrão para novos usuários se não fornecida
             $userData['password'] = Hash::make('123456');
-        }
-
-        // Adicionar tenant_id do usuário autenticado
-        if (!$isUpdate && auth()->user()) {
-            $userData['tenant_id'] = auth()->user()->tenant_id;
         }
 
         // Remover valores nulos para update

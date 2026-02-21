@@ -167,20 +167,10 @@ watch(route, (newRoute) => {
             id="navbar-nav"
             class="navbar-nav h-100"
         >
-            <li v-permission="'dashboard.index'" class="nav-item">
-                <router-link
-                    class="nav-link menu-link"
-                    to="/"
-                >
-                    <i class="mdi mdi-speedometer"/>
-                    <span>Dashboard</span>
-                </router-link>
-            </li>
-
             <li class="nav-item">
                 <router-link
                     class="nav-link menu-link"
-                    to="/produtos"
+                    to="/"
                 >
                     <i class="mdi mdi-shopping-outline"/>
                     <span>Produtos</span>

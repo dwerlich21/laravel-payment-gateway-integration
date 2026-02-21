@@ -24,12 +24,17 @@ class OrderService extends BaseService
         $gateway = $data['gateway'] ?? config('payment.default');
 
         $order = $this->repository->create([
-            'user_id'      => auth()->id(),
-            'product_id'   => $product->id,
-            'quantity'     => $quantity,
-            'total_amount' => $product->price * $quantity,
-            'status'       => Order::STATUS_PENDING,
-            'gateway'      => $gateway,
+            'user_id'           => auth()->id(),
+            'product_id'        => $product->id,
+            'quantity'          => $quantity,
+            'total_amount'      => $product->price * $quantity,
+            'status'            => Order::STATUS_PENDING,
+            'gateway'           => $gateway,
+            'payment_method'    => $data['payment_method'] ?? 'credit_card',
+            'customer_name'     => $data['customer_name'] ?? null,
+            'customer_email'    => $data['customer_email'] ?? null,
+            'customer_cpf_cnpj' => $data['customer_cpf_cnpj'] ?? null,
+            'customer_phone'    => $data['customer_phone'] ?? null,
         ]);
 
         CreatePaymentCharge::dispatch($order);

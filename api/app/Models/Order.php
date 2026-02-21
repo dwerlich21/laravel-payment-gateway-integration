@@ -33,6 +33,11 @@ class Order extends Model
         'total_amount',
         'status',
         'gateway',
+        'payment_method',
+        'customer_name',
+        'customer_email',
+        'customer_cpf_cnpj',
+        'customer_phone',
         'external_id',
     ];
 

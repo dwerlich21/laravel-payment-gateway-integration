@@ -59,33 +59,4 @@ class User extends Authenticatable
             'active'            => 'boolean',
         ];
     }
-
-    public function address(): HasOne
-    {
-        return $this->hasOne(UserAddress::class);
-    }
-
-    /**
-     * Get all goals where user is responsible
-     */
-    public function goalsAsResponsible(): HasMany
-    {
-        return $this->hasMany(Goal::class, 'responsible_id');
-    }
-
-    /**
-     * Get all goals created by user
-     */
-    public function goalsAsCreator(): HasMany
-    {
-        return $this->hasMany(Goal::class, 'created_by');
-    }
-
-    /**
-     * Get user permissions
-     */
-    public function permissions(): BelongsToMany
-    {
-        return $this->belongsToMany(Permission::class, 'user_permissions');
-    }
 }

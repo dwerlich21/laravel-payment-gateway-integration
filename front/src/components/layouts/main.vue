@@ -6,7 +6,6 @@ import {SimpleBar} from "simplebar-vue3";
 
 // Componentes
 import NavBar from "@/components/layouts/nav-bar.vue";
-import Menu from "@/components/layouts/menu.vue";
 import Footer from "@/components/layouts/footer.vue";
 import Spinner from "@/components/base/Spinner.vue";
 
@@ -435,7 +434,6 @@ defineExpose({
                     id="scrollbar"
                     class="h-100"
                 >
-                    <Menu/>
 
                 </SimpleBar>
                 <div class="sidebar-background"/>
