@@ -1,5 +1,3 @@
-// import store from "@/state/store";
-
 export default [
     {
         path: "/login",
@@ -55,7 +53,6 @@ export default [
         name: "dashboard",
         meta: {
             title: "Dashboard",
-            authRequired: true,
         },
         component: () => import("@/views/dashboard/Index.vue"),
     },
@@ -69,26 +66,24 @@ export default [
         },
         component: () => import("@/views/profile/MyProfile.vue"),
     },
-    {
-        path: "/usuarios",
-        name: "users",
-        meta: {
-            title: "Usuários",
-            authRequired: true,
-            permission: 'users.index'
-        },
-        component: () => import("@/views/users/Users.vue"),
-    },
 
+    // Produtos & Checkout
     {
-        path: "/usuarios/cadastrar/:id?",
-        name: "users-form",
+        path: "/produtos",
+        name: "products",
         meta: {
-            title: "Cadastro de Usuários",
-            authRequired: true,
-            permission: 'contacts.create'
+            title: "Produtos",
         },
-        component: () => import("@/views/users/Form.vue"),
+        component: () => import("@/views/products/Products.vue"),
+    },
+    {
+        path: "/checkout/:id",
+        name: "checkout",
+        meta: {
+            title: "Checkout",
+            authRequired: true,
+        },
+        component: () => import("@/views/products/Checkout.vue"),
     },
 
     // Notificações
@@ -100,16 +95,5 @@ export default [
             authRequired: true,
         },
         component: () => import("@/views/notifications/Index.vue"),
-    },
-
-    // Audit Logs
-    {
-        path: "/audit-logs",
-        name: "audit-logs",
-        meta: {
-            title: "Logs de Auditoria",
-            authRequired: true,
-        },
-        component: () => import("@/views/audit/Index.vue"),
     },
 ];

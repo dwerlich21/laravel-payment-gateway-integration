@@ -25,3 +25,7 @@ O formato normalizado de pagamento deve ser:
 }
 
 Use comentários em português explicando cada decisão arquitetural.
+
+Construa o frontend mínimo necessário para listar produtos e iniciar o checkout (Vue, buscar componentes prontos em
+\home\dwerlich\projetos\corporate), utilize classes que já existem no projeto para acelerar e evitar novas estilizações.
+O foco é na integração backend, então o frontend pode ser bem simples.

@@ -1,30 +1,18 @@
 import BaseService from './BaseService';
 import http from '@/http';
-import { notifyError } from "@/composables/messages";
+import {notifyError} from "@/composables/messages";
 
 const USER_FORM = {
     id: 0,
-    basicInfo: {
-        name: '',
-        email: '',
-        cpf: '',
-        type: '',          // Nível de acesso
-        position: '',      // Cargo
-        phone: '',
-        password: '',      // Senha
-        img: null,         // Imagem blob
-        imgUrl: '',        // URL da imagem
-    },
-    address: {
-        zipCode: '',       // CEP
-        uf: '',            // Estado
-        city: '',          // Cidade
-        neighborhood: '',  // Bairro
-        address: '',       // Logradouro
-        number: '',        // Número
-        complement: '',    // Complemento
-    },
-    permissions: [],       // Permissões (array de IDs)
+    name: '',
+    email: '',
+    cpf: '',
+    type: '',          // Nível de acesso
+    position: '',      // Cargo
+    phone: '',
+    password: '',      // Senha
+    img: null,         // Imagem blob
+    imgUrl: '',        // URL da imagem
     active: true,          // Status ativo
 };
 

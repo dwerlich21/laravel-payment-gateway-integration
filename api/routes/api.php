@@ -4,7 +4,9 @@ use App\Http\Controllers\Api\AuditController;
 use App\Http\Controllers\Api\EnumController;
 use App\Http\Controllers\Api\GoalController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PermissionController;
+use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\LoginController;
@@ -24,6 +26,13 @@ Route::group(['prefix' => 'v1'], function () {
     Route::get('enums', [EnumController::class, 'index']);
     Route::get('enums/{enum}', [EnumController::class, 'show']);
 
+    /*
+    |--------------------------------------------------------------------------
+    | Rotas públicas — vitrine de produtos
+    |--------------------------------------------------------------------------
+    */
+    Route::get('products', [ProductController::class, 'index'])->name('products.index');
+
     Route::group([
         'middleware' => [
             'cookie.to.token',
@@ -41,6 +50,14 @@ Route::group(['prefix' => 'v1'], function () {
         |--------------------------------------------------------------------------
         */
         Route::get('permissions', [PermissionController::class, 'index']);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Orders — requer autenticação para efetuar pagamento
+        |--------------------------------------------------------------------------
+        */
+        Route::post('orders', [OrderController::class, 'store'])->name('orders.store');
+        Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
 
         /*
         |--------------------------------------------------------------------------

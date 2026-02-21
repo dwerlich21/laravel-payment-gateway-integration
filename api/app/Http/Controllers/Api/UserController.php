@@ -54,12 +54,8 @@ class UserController extends Controller
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        // Carrega as permissões com seus names
-        $permissions = $user->permissions()->pluck('name')->toArray();
-
         return response()->json([
             'user' => $user,
-            'permissions' => $permissions,
             'success' => true,
             'message' => 'Usuário autenticado',
         ]);

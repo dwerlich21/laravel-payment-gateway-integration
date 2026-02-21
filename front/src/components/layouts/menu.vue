@@ -177,6 +177,16 @@ watch(route, (newRoute) => {
                 </router-link>
             </li>
 
+            <li class="nav-item">
+                <router-link
+                    class="nav-link menu-link"
+                    to="/produtos"
+                >
+                    <i class="mdi mdi-shopping-outline"/>
+                    <span>Produtos</span>
+                </router-link>
+            </li>
+
             <li
                 v-permission="['users.index', 'audit-logs.index']"
                 class="nav-item"

@@ -9,9 +9,9 @@
                 <form id="form">
                     <!-- Seção 1: Informações Básicas -->
                     <BasicInfoSection
-                        v-model:form-data="formData.basicInfo"
+                        v-model:form-data="formData"
                         :access-level-options="accessLevels"
-                        :data="formData.basicInfo"
+                        :data="formData"
                         :errors="errors"
                         :disabled="true"
                         :show-password-field="showPasswordField"
@@ -19,14 +19,7 @@
                         @toggle-password="showPassword = !showPassword"
                         @handle-image="handleImage"
                         @set-image="setImage"
-                        @reset-image="resetImageBlob('user-img-file-input', formData.basicInfo, 'img')"
-                    />
-                    <!-- Seção 2: Endereço -->
-                    <AddressSection
-                        v-model:form-data="formData.address"
-                        :data="formData.address"
-                        :errors="errors"
-                        @set-address="setAddress"
+                        @reset-image="resetImageBlob('user-img-file-input', formData, 'img')"
                     />
                 </form>
             </div>
@@ -45,8 +38,6 @@ import {useAuthStore} from "@/stores/auth.js";
 
 // Componentes das seções
 import BasicInfoSection from "@/views/users/form/BasicInfoSection.vue";
-import AddressSection from "@/views/users/form/AddressSection.vue";
-import router from "@/router";
 import env from "@/env.js";
 import {notifySuccess} from "@/composables/messages.js";
 
@@ -87,10 +78,10 @@ async function loadUserData() {
             formData.value = {
                 ...formData.value,
                 ...data,
-                id: data.basicInfo.id
+                id: data.id
             }
 
-            if (data.basicInfo.avatar) formData.value.basicInfo.avatar = `${env.url}${data.basicInfo.avatar}`
+            if (data.avatar) formData.value.avatar = `${env.url}${data.avatar}`
 
         }
     } catch (error) {
@@ -101,14 +92,14 @@ async function loadUserData() {
 
 async function handleImage(event) {
     try {
-        formData.value.basicInfo = await handleImg(event, 600, 600, formData.value.basicInfo, 'img');
+        formData.value = await handleImg(event, 600, 600, formData.value, 'img');
     } catch (error) {
         console.error("Erro ao carregar a imagem:", error);
     }
 }
 
 function setImage(blob) {
-    formData.value.basicInfo = setImageBlob(blob, formData.value.basicInfo, 'img');
+    formData.value = setImageBlob(blob, formData.value, 'img');
 }
 
 async function submitForm() {

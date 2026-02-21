@@ -1,12 +1,15 @@
 <script setup>
 import { onMounted, onUnmounted, computed } from 'vue';
 import { useNotificationStore } from '@/stores/notification';
+import { useAuthStore } from '@/stores/auth';
 import { useRouter } from 'vue-router';
 
 const notificationStore = useNotificationStore();
+const authStore = useAuthStore();
 const router = useRouter();
 
 // Computed
+const isLoggedIn = computed(() => authStore.loggedIn);
 const unreadCount = computed(() => notificationStore.unreadCount);
 const hasUnread = computed(() => notificationStore.hasUnread);
 const formattedCount = computed(() => notificationStore.formattedUnreadCount);
@@ -15,6 +18,7 @@ const loading = computed(() => notificationStore.loading);
 
 // Methods
 const fetchNotifications = async () => {
+    if (!isLoggedIn.value) return;
     await notificationStore.fetchNotifications({ limit: 5 });
 };
 
@@ -40,10 +44,12 @@ const formatDate = (date) => {
     return notificationStore.formatDate(date);
 };
 
-// Lifecycle
+// Lifecycle — só inicia polling se estiver logado
 onMounted(() => {
-    notificationStore.startPolling(30000);
-    fetchNotifications();
+    if (isLoggedIn.value) {
+        notificationStore.startPolling(30000);
+        fetchNotifications();
+    }
 });
 
 onUnmounted(() => {
@@ -52,7 +58,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="dropdown topbar-head-dropdown ms-1 header-item">
+    <div v-if="isLoggedIn" class="dropdown topbar-head-dropdown ms-1 header-item">
         <button
             type="button"
             class="btn btn-icon btn-topbar btn-ghost-secondary rounded-circle"

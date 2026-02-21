@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 
 export const useLayoutStore = defineStore('layout', {
   state: () => ({
-    layoutType: 'vertical',
+    layoutType: 'horizontal',
     layoutWidth: 'fluid',
     sidebarSize: 'lg',
     topbar: 'light',

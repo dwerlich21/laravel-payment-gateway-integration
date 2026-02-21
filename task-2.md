@@ -16,5 +16,3 @@ No Model Payment:
 - belongs to Order
 - cast raw_payload e normalized_payload como array
 - método isSuccessful(): bool
-
-Adicione seeders com 3 produtos fictícios (ex: Plano Basic $9.99, Plano Pro $29.99, Plano Enterprise $99.99).
