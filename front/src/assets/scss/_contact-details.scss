@@ -1,0 +1,476 @@
+// _contact-details.scss
+// Estilos específicos para a página de detalhes do contato
+
+// Variáveis
+$primary-color: #F17021; // Cor principal - preto
+$primary-color-light: rgba(241, 112, 33, 0.1);
+$primary-color-lighter: rgba(241, 112, 33, 0.05);
+$primary-gradient: linear-gradient(to right, #212529, #343a40);
+$card-border-radius: 10px;
+$section-spacing: 1.5rem;
+$avatar-size: 130px;
+$avatar-border: 4px;
+$timeline-dot-size: 12px;
+$timeline-line-width: 2px;
+
+// Header do perfil
+.profile-header {
+  position: relative;
+  padding-top: 1rem;
+  border-radius: $card-border-radius $card-border-radius 0 0;
+  overflow: hidden;
+  background: linear-gradient(to right, #F17021, #f59454);
+
+  &:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: $primary-gradient;
+  }
+
+  &.authority {
+    background: linear-gradient(to right, $primary-color-lighter, rgba(241, 112, 33, 0.05));
+    &:before { background: $primary-gradient; }
+  }
+
+  &.political {
+    background: linear-gradient(to right, rgba(239, 174, 78, 0.1), rgba(241, 112, 33, 0.05));
+    &:before { background: linear-gradient(to right, #212529, #efae4e); }
+  }
+
+  &.citizen {
+    background: linear-gradient(to right, rgba(60, 209, 136, 0.1), rgba(52, 58, 64, 0.05));
+    &:before { background: linear-gradient(to right, #212529, #3cd188); }
+  }
+}
+
+// Avatar personalizado
+.profile-avatar-container {
+  margin: 0 auto;
+  position: relative;
+  width: $avatar-size;
+  height: $avatar-size;
+
+  &:after {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    border-radius: 50%;
+    background: $primary-gradient;
+    z-index: -1;
+    opacity: 0.3;
+  }
+}
+
+.profile-avatar {
+  width: $avatar-size;
+  height: $avatar-size;
+  border-radius: 50%;
+  object-fit: cover;
+  border: $avatar-border solid #fff;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.profile-avatar-circle {
+  width: $avatar-size;
+  height: $avatar-size;
+  font-size: 3rem;
+  font-weight: 600;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  border: $avatar-border solid #fff;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  text-transform: uppercase;
+}
+
+// Seção de informações do perfil
+.profile-info {
+  h6 {
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    margin-bottom: 1rem;
+  }
+
+  .info-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+
+    i {
+      flex-shrink: 0;
+      width: 20px;
+      margin-top: 3px;
+    }
+
+    .info-content {
+      flex-grow: 1;
+      padding-left: 0.5rem;
+    }
+  }
+}
+
+// Cards de estatísticas
+.stat-card {
+  position: relative;
+  padding: 1.25rem;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  overflow: hidden;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+  }
+
+  .stat-bg-icon {
+    position: absolute;
+    right: -10px;
+    bottom: -10px;
+    font-size: 5rem;
+    opacity: 0.1;
+    transform: rotate(-15deg);
+  }
+
+  .stat-icon {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+  }
+
+  .stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .stat-trend {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+
+    &.positive {
+      background-color: rgba(60, 209, 136, 0.1);
+      color: #3cd188;
+    }
+
+    &.negative {
+      background-color: rgba(247, 102, 110, 0.1);
+      color: #f7666e;
+    }
+
+    i {
+      margin-right: 0.25rem;
+    }
+  }
+}
+
+// Timeline para atendimentos
+.timeline-container {
+  position: relative;
+}
+
+.timeline-item {
+  position: relative;
+  padding-bottom: $section-spacing;
+
+  &:before {
+    content: '';
+    position: absolute;
+    left: -$timeline-line-width*2;
+    top: $timeline-dot-size*2;
+    height: calc(100% - #{$timeline-dot-size*2});
+    width: $timeline-line-width;
+    background-color: #e9ecef;
+  }
+
+  &:last-child:before {
+    display: none;
+  }
+}
+
+.timeline-badge {
+  position: absolute;
+  left: -16px;
+  top: 0;
+  width: $timeline-dot-size*2;
+  height: $timeline-dot-size*2;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: $timeline-dot-size;
+  z-index: 2;
+}
+
+.timeline-content {
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  border-left: 3px solid transparent;
+
+  &.success { border-left-color: #3cd188; }
+  &.warning { border-left-color: #efae4e; }
+  &.info { border-left-color: #0ac7fb; }
+  &.danger { border-left-color: #f7666e; }
+}
+
+// Lista de projetos
+.project-item {
+  border-radius: 10px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+  }
+}
+
+// Estilos para documentos
+.document-card {
+  transition: all 0.3s ease;
+  border-radius: 10px;
+  overflow: hidden;
+  height: 100%;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+  }
+
+  .document-icon {
+    font-size: 2rem;
+    text-align: center;
+    margin-bottom: 1rem;
+    color: #6c757d;
+  }
+
+  .document-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 600;
+  }
+
+  .document-actions {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+  }
+}
+
+// Tabs estilizadas
+.custom-tabs {
+  .nav-link {
+    border-radius: 0;
+    padding: 1rem 1.5rem;
+    font-weight: 600;
+    position: relative;
+
+    &:after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 3px;
+      background: $primary-gradient;
+      transition: width 0.3s ease;
+    }
+
+    &.active {
+      background-color: transparent;
+      color: $primary-color;
+
+      &:after {
+        width: 100%;
+      }
+    }
+  }
+}
+
+// Estados vazios
+.empty-state {
+  padding: 3rem 1rem;
+  text-align: center;
+
+  i {
+    font-size: 3rem;
+    color: #ced4da;
+    margin-bottom: 1rem;
+  }
+
+  h6 {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    max-width: 300px;
+    margin: 0 auto;
+  }
+}
+
+// Abas verticais personalizadas
+.custom-vertical-tabs {
+  display: flex;
+
+  .nav-pills {
+    flex-direction: column;
+    width: 250px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    padding: 1rem 0;
+
+    .nav-link {
+      padding: 0.75rem 1.5rem;
+      border-radius: 0;
+      margin: 0.25rem 0;
+      transition: all 0.3s ease;
+      border-left: 3px solid transparent;
+
+      &.active {
+        background-color: $primary-color-light;
+        color: $primary-color;
+        border-left-color: $primary-color;
+      }
+
+      &:hover:not(.active) {
+        background-color: $primary-color-lighter;
+      }
+
+      .tab-counter {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        font-size: 0.75rem;
+        margin-left: 0.5rem;
+      }
+    }
+  }
+
+  .tab-content {
+    flex-grow: 1;
+    padding: 1.5rem;
+    border-radius: 10px;
+    background-color: #fff;
+    margin-left: 1.5rem;
+  }
+}
+
+// Estilos para modo escuro
+html[data-layout-mode="dark"] {
+  .profile-header {
+    background: linear-gradient(to right, #212529, #343a40);
+    border-bottom: 1px solid #343a40;
+  }
+
+  .profile-info h6 {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .timeline-content {
+    background-color: #2c3035;
+  }
+
+  .timeline-item:before {
+    background-color: #495057;
+  }
+
+  .project-item, .document-card {
+    background-color: #2c3035;
+  }
+
+  .custom-vertical-tabs {
+    .nav-pills {
+      background-color: #2c3035;
+    }
+
+    .tab-content {
+      background-color: #212529;
+    }
+  }
+
+  .empty-state i {
+    color: #495057;
+  }
+}
+
+// Animações
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.animate-pulse {
+  animation: pulse 2s infinite;
+}
+
+// Responsividade
+@media (max-width: 991.98px) {
+  .custom-vertical-tabs {
+    flex-direction: column;
+
+    .nav-pills {
+      flex-direction: row;
+      width: 100%;
+      overflow-x: auto;
+      white-space: nowrap;
+      padding: 0.5rem;
+
+      .nav-link {
+        border-left: none;
+        border-bottom: 3px solid transparent;
+
+        &.active {
+          border-left-color: transparent;
+          border-bottom-color: #212529 ;
+        }
+      }
+    }
+
+    .tab-content {
+      margin-left: 0;
+      margin-top: 1.5rem;
+    }
+  }
+}
+
+@media (max-width: 767.98px) {
+  .profile-avatar-container {
+    width: $avatar-size * 0.8;
+    height: $avatar-size * 0.8;
+  }
+
+  .profile-avatar, .profile-avatar-circle {
+    width: $avatar-size * 0.8;
+    height: $avatar-size * 0.8;
+    font-size: 2.5rem;
+  }
+
+  .stat-card {
+    margin-bottom: 1rem;
+  }
+}

@@ -1,0 +1,426 @@
+//
+// _dashboard.scss
+//
+
+// ==============================================
+// Dashboard Utility Classes
+// ==============================================
+
+// Font Size Utilities
+.fs-10 { font-size: 0.625rem !important; }
+.fs-11 { font-size: 0.6875rem !important; }
+.fs-12 { font-size: 0.75rem !important; }
+.fs-13 { font-size: 0.8125rem !important; }
+.fs-14 { font-size: 0.875rem !important; }
+.fs-15 { font-size: 0.9375rem !important; }
+.fs-16 { font-size: 1rem !important; }
+.fs-17 { font-size: 1.0625rem !important; }
+.fs-18 { font-size: 1.125rem !important; }
+.fs-20 { font-size: 1.25rem !important; }
+.fs-22 { font-size: 1.375rem !important; }
+.fs-24 { font-size: 1.5rem !important; }
+
+// Font Family
+.ff-primary { font-family: $font-family-primary !important; }
+.ff-secondary { font-family: $font-family-secondary !important; }
+
+// Avatar Sizes
+.avatar-xxs {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.avatar-xs {
+  width: 2rem;
+  height: 2rem;
+}
+
+.avatar-sm {
+  width: 3rem;
+  height: 3rem;
+}
+
+.avatar-md {
+  width: 4rem;
+  height: 4rem;
+}
+
+.avatar-lg {
+  width: 5rem;
+  height: 5rem;
+}
+
+.avatar-xl {
+  width: 6rem;
+  height: 6rem;
+}
+
+.avatar-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: $white;
+}
+
+// Progress Bar Sizes
+.progress-sm {
+  height: 5px;
+}
+
+.progress-md {
+  height: 8px;
+}
+
+.progress-lg {
+  height: 12px;
+}
+
+// Counter Value (Tabular Nums)
+.counter-value {
+  font-variant-numeric: tabular-nums;
+}
+
+// Badge Dot
+.badge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+// Equal Height Rows and Cards
+.row-equal-height {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.col-equal-height {
+  display: flex;
+  flex-direction: column;
+}
+
+.card-equal-height {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-equal-height .card-body {
+  flex: 1;
+}
+
+// ==============================================
+// Dashboard Card Enhancements
+// ==============================================
+
+// Card with hover animation
+.card-animate {
+  transition: all 0.4s;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    width: 210px;
+    height: 210px;
+    background: linear-gradient(135deg, rgba(var(--#{$prefix}primary-rgb), 0.08) 0%, transparent 50%);
+    border-radius: 50%;
+    top: -120px;
+    right: -80px;
+    opacity: 0;
+    transition: all 0.4s;
+  }
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: $box-shadow-lg;
+
+    &::before {
+      opacity: 1;
+    }
+  }
+}
+
+// Card Height 100%
+.card-height-100 {
+  height: calc(100% - #{$grid-gutter-width});
+}
+
+// ==============================================
+// Dashboard Activity Timeline
+// ==============================================
+
+.acitivity-timeline {
+  position: relative;
+}
+
+.acitivity-item {
+  position: relative;
+  padding-bottom: 1rem;
+  padding-left: 20px;
+  border-left: 1px dashed var(--#{$prefix}border-color);
+  margin-left: 15px;
+
+  &:last-child {
+    padding-bottom: 0;
+    border-left-color: transparent;
+  }
+}
+
+.acitivity-avatar {
+  position: absolute;
+  left: -16px;
+  background-color: var(--#{$prefix}card-bg-custom);
+}
+
+// ==============================================
+// Dashboard Mini Stats Widget
+// ==============================================
+
+.mini-stats-wid {
+  position: relative;
+
+  .mini-stat-icon {
+    overflow: hidden;
+    position: relative;
+
+    &:before,
+    &:after {
+      content: "";
+      position: absolute;
+      width: 8px;
+      height: 69px;
+      background-color: rgba($success, .1);
+      left: 3px;
+      transform: rotate(32deg);
+      top: -8px;
+      transition: all 0.4s;
+    }
+
+    &::after {
+      left: 27px;
+      width: 8px;
+      transition: all 0.2s;
+    }
+  }
+
+  &:hover {
+    .mini-stat-icon {
+      &::after {
+        left: 60px;
+      }
+
+      &::before {
+        left: 50px;
+      }
+    }
+  }
+}
+
+// ==============================================
+// Dashboard Widget Patterns (SVG backgrounds)
+// ==============================================
+
+.widget-pattern {
+  .s0 { opacity: .05; fill: var(--#{$prefix}success); }
+  .s1 { opacity: .1; fill: var(--#{$prefix}success); }
+}
+
+// ==============================================
+// Original Dashboard Styles
+// ==============================================
+
+.dash-filter-picker {
+  min-width: 210px !important;
+}
+
+// Flatpickr Calendar
+
+.upcoming-scheduled {
+  position: relative;
+  @media (max-width: 575.98px) {
+    top: 35px !important;
+  }
+  .flatpickr-months {
+    position: absolute !important;
+    top: -45px !important;
+    left: auto !important;
+    right: 0px !important;
+    width: 200px;
+    background-color: transparent;
+
+    .flatpickr-month {
+      color: $gray-600 !important;
+      fill: $gray-600 !important;
+    }
+    .flatpickr-prev-month,
+    .flatpickr-next-month {
+      display: none;
+    }
+  }
+  .flatpickr-calendar {
+    box-shadow: none !important;
+    .flatpickr-current-month {
+      font-size: 13px;
+      width: 100%;
+      left: 0;
+    }
+    .flatpickr-monthDropdown-months {
+      border: 1px solid $border-color;
+      border-radius: 4px;
+      height: 26px;
+    }
+    .flatpickr-weekdays {
+      background-color: var(--#{$prefix}light);
+      border: none;
+      span.flatpickr-weekday {
+        color: var(--#{$prefix}dark);
+        background-color: var(--#{$prefix}light);
+      }
+    }
+    .flatpickr-day {
+      &.today {
+        color: $white !important;
+        background-color: $success;
+        border-color: $success !important;
+        &:hover {
+          color: $success !important;
+          background-color: rgba($success, 0.2) !important;
+        }
+      }
+      &.selected {
+        background-color: $success !important;
+        border-color: $success !important;
+        color: $white;
+      }
+    }
+    .numInputWrapper {
+      width: 7.5ch;
+      margin-left: 10px;
+    }
+  }
+
+  .flatpickr-days {
+    border: none !important;
+  }
+}
+
+.crm-widget {
+  .col {
+    border-right: 1px solid $border-color;
+    &:last-child {
+      border: 0px;
+    }
+    @media (min-width: 768px) and (max-width: 1399.98px) {
+      &:nth-child(3) {
+        border-right: 0px;
+      }
+      &:last-child {
+        border-right: 1px solid $border-color;
+      }
+    }
+    @media (max-width: 767.98px) {
+      border-right: 0px;
+      border-bottom: 1px solid $border-color;
+    }
+  }
+}
+
+@media (min-width: 1400px) and (max-width: 1599.98px) {
+  .project-wrapper {
+    > .col-xxl-8,
+    .col-xxl-4 {
+      width: 100%;
+    }
+  }
+}
+
+.crypto-widget {
+  max-width: 130px !important;
+}
+
+//nft dashboard
+
+.bg-marketplace {
+  //background-image: url(~@/assets/images/nft/marketplace.png);
+  background-size: cover;
+}
+
+.dash-countdown {
+  .countdownlist {
+    .count-num {
+      background-color: var(--#{$prefix}card-bg-custom);
+      padding: 16px 8px;
+      font-size: 22px;
+
+      @media (max-width: 575.98px) {
+        font-size: 16px;
+        padding: 8px 6px;
+      }
+    }
+
+    .count-title {
+      @media (max-width: 575.98px) {
+        font-size: 10px;
+      }
+    }
+  }
+}
+
+.marketplace-icon {
+  position: absolute;
+  float: right;
+  top: 30px;
+  left: 30px;
+}
+
+.marketplace-swiper {
+  .swiper-button-next,
+  .swiper-button-prev {
+    top: 34px;
+    width: 28px;
+    height: 28px;
+    background-color: rgba($primary, 0.1);
+    color: $primary;
+    border-radius: 0.3rem;
+    right: 16px !important;
+  }
+  .swiper-button-prev {
+    right: 58px !important;
+    left: auto !important;
+  }
+}
+
+.dash-collection {
+  .content {
+    background-color: rgba($white, 0.25);
+    backdrop-filter: blur(5px);
+  }
+}
+
+.dash-nft {
+  @media (max-width: 1441.98px) {
+    .col-xxl-9,
+    .col-xxl-3 {
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+  }
+}
+
+.jvectormap-legend-cnt-h .jvectormap-legend-tick-sample {
+  width: 32px;
+  height: 32px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+// #recomended-jobs {
+//     .gridjs-search{
+//         padding: 0;
+//         float: right !important;
+//     }
+// }

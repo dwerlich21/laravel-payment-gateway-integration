@@ -1,0 +1,31 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('goals', function (Blueprint $table) {
+            $table->foreignId('responsible_id')->after('id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('created_by')->after('responsible_id')->constrained('users')->onDelete('cascade');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('goals', function (Blueprint $table) {
+            $table->dropForeign(['responsible_id']);
+            $table->dropForeign(['created_by']);
+            $table->dropColumn(['responsible_id', 'created_by']);
+        });
+    }
+};

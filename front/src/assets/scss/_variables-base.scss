@@ -1,0 +1,52 @@
+// Base variables without Bootstrap functions
+// These can be imported before Bootstrap
+
+// Theme colors
+$primary: #F17021;
+$secondary: #1A2948;
+$primary-10: rgba(241, 112, 33, .1);
+$primary-25: rgba(241, 112, 33, .25);
+$primary-50: rgba(241, 112, 33, .5);
+
+// Gray colors
+$white: #fff;
+$gray-100: #f3f6f9;
+$gray-200: #eff2f7;
+$gray-300: #e9ebec;
+$gray-400: #ced4da;
+$gray-500: #adb5bd;
+$gray-600: #878a99;
+$gray-700: #495057;
+$gray-800: #343a40;
+$gray-900: #272a3a;
+$black: #000;
+
+// Base colors
+$blue: #3577f1;
+$indigo: #405189;
+$purple: #687cfe;
+$pink: #f672a7;
+$red: #f7666e;
+$orange: #ff7f5d;
+$yellow: #efae4e;
+$green: #3cd188;
+$teal: #02a8b5;
+$cyan: #0ac7fb;
+
+// Theme assignments
+$success: $green;
+$info: $cyan;
+$warning: $yellow;
+$danger: $red;
+$light: $gray-100;
+$dark: $gray-900;
+
+// Font family
+@import url('https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap');
+
+$font-family-primary: 'Public Sans', sans-serif;
+$font-family-secondary: 'Public Sans', sans-serif;
+
+// Prefix
+$variable-prefix: vz-;
+$prefix: $variable-prefix;

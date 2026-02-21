@@ -1,0 +1,183 @@
+/* Estilos para os cards de informação */
+
+@media (min-width: 1400px) {
+  .tab-content {
+    overflow-y: auto;
+    height: calc(100vh - 390px);
+    overflow-x: hidden;
+  }
+}
+
+.info-card {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1.25rem;
+  border: 1px solid #e9ecef;
+  transition: all 0.2s ease;
+}
+
+.info-card:hover {
+  border-color: #dee2e6;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.info-title {
+  color: #495057;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 0.5rem;
+}
+
+.info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.info-label {
+  font-weight: 500;
+  color: #6c757d;
+  min-width: 80px;
+  font-size: 0.875rem;
+}
+
+.info-value {
+  color: #495057;
+  font-weight: 500;
+}
+
+/* Seção de descrição */
+.description-section {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1.25rem;
+  border: 1px solid #e9ecef;
+}
+
+.section-title {
+  color: #495057;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+.description-content {
+  background: white;
+  border-radius: 6px;
+  padding: 1rem;
+  border: 1px solid #e9ecef;
+}
+
+.description-text {
+  white-space: pre-line;
+  line-height: 1.6;
+}
+
+/* Avatar melhorado */
+.avatar-md {
+  width: 3rem;
+  height: 3rem;
+}
+
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #5b73e8 0%, #4c63d2 100%);
+}
+
+/* Estilos para impressão */
+@media print {
+  .btn, .hstack {
+    display: none !important;
+  }
+
+  .info-card {
+    background: white !important;
+    border: 1px solid #dee2e6 !important;
+  }
+
+  .description-section {
+    background: white !important;
+  }
+
+  .description-content {
+    border: none !important;
+  }
+}
+
+/* Responsividade melhorada */
+@media (max-width: 767.98px) {
+  .attendance-header .d-flex {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .info-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .info-label {
+    min-width: auto;
+    margin-bottom: 0.25rem;
+  }
+
+  .avatar-md {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .fs-18 {
+    font-size: 1.1rem !important;
+  }
+
+  .fs-16 {
+    font-size: 1rem !important;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .info-card {
+    padding: 1rem;
+  }
+
+  .description-section {
+    padding: 1rem;
+  }
+
+  .description-content {
+    padding: 0.75rem;
+  }
+}
+
+[data-layout-mode="dark"] {
+
+  .info-card, .description-section {
+    background: #2A2F34;
+    border: solid 1px #32383e;
+  }
+
+
+  .description-content {
+    background: #212529;
+    border: solid 1px #32383e;
+  }
+
+
+  .info-title, .info-label, .info-value, .section-title {
+    color: #e2e2e2;
+  }
+
+  .info-title {
+    border-bottom: solid 1px #32383e;
+  }
+}

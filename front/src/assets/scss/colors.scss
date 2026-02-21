@@ -1,0 +1,105 @@
+// Group Icon Classes - Classes para ícones de grupos
+// Baseado no padrão fornecido com as variáveis do tema
+
+@import "config/corporate/app";
+
+// Primary Subtle - Sutil primário
+.bg-primary-subtle,
+.fc-daygrid-dot-event.bg-primary-subtle,
+.bg-primary-subtle .fc-list-event-title a,
+a.fc-h-event.bg-primary-subtle,
+a.fc-h-event.bg-primary-subtle .fc-event-title.fc-sticky {
+  background-color: tint-color($primary, 95%) !important; // Versão muito clara do preto
+  color: $gray-800 !important; // Cor escura para contraste no fundo claro
+}
+
+// Secondary Subtle - Sutil secundário
+.bg-secondary-subtle,
+.fc-daygrid-dot-event.bg-secondary-subtle,
+.bg-secondary-subtle .fc-list-event-title a,
+a.fc-h-event.bg-secondary-subtle,
+a.fc-h-event.bg-secondary-subtle .fc-event-title.fc-sticky {
+  background-color: $secondary !important; // Já é uma cor clara
+  color: $gray-100 !important; // Cor para contraste
+}
+
+// Success Subtle - Sutil de sucesso
+.bg-success-subtle,
+.fc-daygrid-dot-event.bg-success-subtle,
+.bg-success-subtle .fc-list-event-title a,
+a.fc-h-event.bg-success-subtle,
+a.fc-h-event.bg-success-subtle .fc-event-title.fc-sticky {
+  background-color: tint-color($success, 85%) !important; // Verde claro
+  color: $success !important; // Verde original
+}
+
+// Info Subtle - Sutil de informação
+.bg-info-subtle,
+.fc-daygrid-dot-event.bg-info-subtle,
+.bg-info-subtle .fc-list-event-title a,
+a.fc-h-event.bg-info-subtle,
+a.fc-h-event.bg-info-subtle .fc-event-title.fc-sticky {
+  background-color: tint-color($info, 85%) !important; // Ciano claro
+  color: $info !important; // Ciano original
+}
+
+// Warning Subtle - Sutil de aviso
+.bg-warning-subtle,
+.fc-daygrid-dot-event.bg-warning-subtle,
+.bg-warning-subtle .fc-list-event-title a,
+a.fc-h-event.bg-warning-subtle,
+a.fc-h-event.bg-warning-subtle .fc-event-title.fc-sticky {
+  background-color: tint-color($warning, 85%) !important; // Amarelo claro
+  color: $warning !important; // Amarelo original
+}
+
+// Dark Subtle - Sutil escuro
+.bg-dark-subtle,
+.fc-daygrid-dot-event.bg-dark-subtle,
+.bg-dark-subtle .fc-list-event-title a,
+a.fc-h-event.bg-dark-subtle,
+a.fc-h-event.bg-dark-subtle .fc-event-title.fc-sticky {
+  background-color: tint-color($dark, 90%) !important; // Cinza muito claro
+  color: $dark !important; // Cinza escuro original
+}
+
+// Purple Subtle - Sutil roxo
+.bg-purple-subtle,
+.fc-daygrid-dot-event.bg-purple-subtle,
+.bg-purple-subtle .fc-list-event-title a,
+a.fc-h-event.bg-purple-subtle,
+a.fc-h-event.bg-purple-subtle .fc-event-title.fc-sticky {
+  background-color: tint-color($purple, 85%) !important; // Roxo claro
+  color: $purple !important; // Roxo original
+}
+
+// Indigo Subtle - Sutil índigo
+.bg-indigo-subtle,
+.fc-daygrid-dot-event.bg-indigo-subtle,
+.bg-indigo-subtle .fc-list-event-title a,
+a.fc-h-event.bg-indigo-subtle,
+a.fc-h-event.bg-indigo-subtle .fc-event-title.fc-sticky {
+  background-color: tint-color($indigo, 85%) !important; // Índigo claro
+  color: $indigo !important; // Índigo original
+}
+
+// Teal Subtle - Sutil azul-petróleo
+.bg-teal-subtle,
+.fc-daygrid-dot-event.bg-teal-subtle,
+.bg-teal-subtle .fc-list-event-title a,
+a.fc-h-event.bg-teal-subtle,
+a.fc-h-event.bg-teal-subtle .fc-event-title.fc-sticky {
+  background-color: tint-color($teal, 85%) !important; // Teal claro
+  color: $teal !important; // Teal original
+}
+
+// Classes de texto para usar com as classes subtle
+.text-primary { color: $primary !important; }
+.text-secondary { color: $secondary !important; }
+.text-success { color: $success !important; }
+.text-info { color: $info !important; }
+.text-warning { color: $warning !important; }
+.text-dark { color: $dark !important; }
+.text-purple { color: $purple !important; }
+.text-indigo { color: $indigo !important; }
+.text-teal { color: $teal !important; }
