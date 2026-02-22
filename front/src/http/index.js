@@ -28,6 +28,10 @@ http.interceptors.response.use(
     },
     (error) => {
         if (error.response && error.response.status === 401) {
+            const currentRoute = router.currentRoute?.value?.name;
+            if (currentRoute === 'checkout') {
+                return Promise.reject(error);
+            }
             notifyError('Não autorizado!');
             // No need to remove token from localStorage as we use cookies now
             if (router.name !== 'login') router.push('/login'); // Redireciona o usuário para a página de login

@@ -36,19 +36,32 @@ class ProcessPaymentWebhook implements ShouldQueue
     public function handle(PaymentManager $paymentManager): void
     {
         try {
+            Log::info('[ProcessPaymentWebhook] Iniciando processamento', [
+                'gateway' => $this->gateway,
+                'event_type' => $this->payload['type'] ?? 'unknown',
+            ]);
+
             $normalized = $paymentManager->gateway($this->gateway)
                 ->normalizeWebhookPayload($this->payload);
+
+            Log::info('[ProcessPaymentWebhook] Payload normalizado', $normalized);
 
             $order = Order::where('external_id', $normalized['external_id'])->first();
 
             if (! $order) {
-                Log::warning('Webhook recebido para pedido não encontrado', [
+                Log::warning('[ProcessPaymentWebhook] Pedido não encontrado', [
                     'gateway'     => $this->gateway,
                     'external_id' => $normalized['external_id'],
                 ]);
 
                 return;
             }
+
+            Log::info('[ProcessPaymentWebhook] Pedido encontrado', [
+                'order_id' => $order->id,
+                'status_atual' => $order->status,
+                'status_novo' => $normalized['status'],
+            ]);
 
             Payment::create([
                 'order_id'            => $order->id,
@@ -64,10 +77,16 @@ class ProcessPaymentWebhook implements ShouldQueue
             ]);
 
             $order->update(['status' => $normalized['status']]);
+
+            Log::info('[ProcessPaymentWebhook] Pedido atualizado com sucesso', [
+                'order_id' => $order->id,
+                'status' => $normalized['status'],
+            ]);
         } catch (\Throwable $e) {
-            Log::error('Falha ao processar webhook de pagamento', [
+            Log::error('[ProcessPaymentWebhook] Falha ao processar webhook', [
                 'gateway' => $this->gateway,
                 'error'   => $e->getMessage(),
+                'trace'   => $e->getTraceAsString(),
             ]);
         }
     }

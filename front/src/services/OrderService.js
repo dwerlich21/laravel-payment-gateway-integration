@@ -10,7 +10,7 @@ export default class OrderService {
     async checkout(data) {
         try {
             this.spinner.showDataSpinner({message: 'Processando pedido...', zIndex: 99});
-            const response = await http.post('orders', data);
+            const response = await http.post('checkout', data);
             notifySuccess(response.data.message || 'Pedido criado com sucesso!');
             return response.data;
         } catch (error) {

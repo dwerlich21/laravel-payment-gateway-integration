@@ -56,11 +56,13 @@ class StripeGatewayService implements PaymentGatewayInterface
                 ],
                 'success_url' => $data['success_url'] ?? config('app.url').'/pagamento/sucesso',
                 'cancel_url' => $data['cancel_url'] ?? config('app.url').'/pagamento/cancelado',
-                'metadata' => $data['metadata'] ?? [],
+                'metadata' => array_merge($data['metadata'] ?? [], [
+                    'order_id' => $data['order_id'] ?? null,
+                ]),
             ]);
 
             return [
-                'external_id' => $session->payment_intent,
+                'external_id' => $session->id,
                 'checkout_url' => $session->url,
                 'status' => 'pending',
             ];
@@ -78,11 +80,21 @@ class StripeGatewayService implements PaymentGatewayInterface
     public function getChargeStatus(string $externalId): string
     {
         try {
-            $paymentIntent = PaymentIntent::retrieve($externalId);
+            $session = StripeSession::retrieve($externalId);
 
-            return match ($paymentIntent->status) {
-                'succeeded' => 'paid',
-                'canceled' => 'failed',
+            if ($session->payment_intent) {
+                $paymentIntent = PaymentIntent::retrieve($session->payment_intent);
+
+                return match ($paymentIntent->status) {
+                    'succeeded' => 'paid',
+                    'canceled' => 'failed',
+                    default => 'pending',
+                };
+            }
+
+            return match ($session->status) {
+                'complete' => 'paid',
+                'expired' => 'failed',
                 default => 'pending',
             };
         } catch (\Exception $e) {
@@ -111,7 +123,7 @@ class StripeGatewayService implements PaymentGatewayInterface
             $amountTotal = ($session['amount_total'] ?? 0) / 100;
 
             return [
-                'external_id' => $session['payment_intent'] ?? null,
+                'external_id' => $session['id'] ?? null,
                 'status' => $status,
                 'amount' => $amountTotal,
                 'paid_at' => isset($session['created']) ? date('Y-m-d H:i:s', $session['created']) : null,

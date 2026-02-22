@@ -201,7 +201,7 @@ onMounted(() => {
                     <!-- Notifications Bell -->
                     <NotificationBell />
 
-                    <div class="dropdown ms-sm-3 header-item topbar-user">
+                    <div v-if="user && Object.keys(user).length" class="dropdown ms-sm-3 header-item topbar-user">
                         <button
                             id="page-header-user-dropdown"
                             type="button"
@@ -210,7 +210,7 @@ onMounted(() => {
                             aria-haspopup="true"
                             aria-expanded="false"
                         >
-                            <span class="d-flex align-items-center" v-if="user">
+                            <span class="d-flex align-items-center">
                                 <img
                                     v-if="user.avatar"
                                     :src="`${env.url}${user.avatar}`"
@@ -238,7 +238,7 @@ onMounted(() => {
                         </button>
                         <div class="dropdown-menu dropdown-menu-end">
                             <h6 class="dropdown-header">
-                                Bem vindo {{ user?.name }}!
+                                Bem vindo {{ user.name }}!
                             </h6>
 
                             <router-link
@@ -263,6 +263,12 @@ onMounted(() => {
                                 </span>
                             </b-link>
                         </div>
+                    </div>
+
+                    <div v-else class="ms-sm-3 header-item">
+                        <router-link to="/login" class="btn btn-soft-primary btn-sm">
+                            <i class="mdi mdi-login me-1"/>Entrar
+                        </router-link>
                     </div>
                 </div>
             </div>

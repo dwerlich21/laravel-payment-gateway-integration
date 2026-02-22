@@ -22,15 +22,25 @@ class WebhookController
      */
     public function handleStripe(Request $request): JsonResponse
     {
+        Log::info('[Webhook] Stripe webhook recebido', [
+            'type' => $request->input('type'),
+            'ip' => $request->ip(),
+        ]);
+
         $gateway = $this->paymentManager->gateway('stripe');
 
         if (! $gateway->validateWebhookSignature($request)) {
-            Log::warning('Webhook Stripe com assinatura inválida', [
+            Log::warning('[Webhook] Stripe assinatura inválida', [
                 'ip' => $request->ip(),
             ]);
 
             return response()->json(['error' => 'Assinatura inválida'], 400);
         }
+
+        Log::info('[Webhook] Stripe assinatura válida, despachando job', [
+            'type' => $request->input('type'),
+            'session_id' => $request->input('data.object.id'),
+        ]);
 
         ProcessPaymentWebhook::dispatch('stripe', $request->all());
 

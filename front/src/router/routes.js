@@ -62,7 +62,6 @@ export default [
         name: "checkout",
         meta: {
             title: "Checkout",
-            authRequired: true,
         },
         component: () => import("@/views/products/Checkout.vue"),
     },
