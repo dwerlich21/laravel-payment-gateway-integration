@@ -6,6 +6,7 @@ import Layout from '@/components/layouts/main.vue';
 import PageHeader from '@/components/layouts/page-header.vue';
 import ProductService from '@/services/ProductService';
 import OrderService from '@/services/OrderService';
+import {notifyError} from '@/composables/messages';
 
 const route = useRoute();
 const productService = new ProductService();
@@ -114,6 +115,7 @@ function mountStripeCard() {
             invalid: { color: '#dc3545' },
         },
         hidePostalCode: true,
+        disableLink: true,
     });
 
     const container = document.getElementById('card-element');
@@ -180,6 +182,8 @@ async function submitOrder() {
             });
 
             if (error) {
+                console.log(error)
+                notifyError(error.message);
                 paymentError.value = error.message;
                 pendingOrder.value = {order, clientSecret};
                 orderResult.value = {
@@ -552,7 +556,7 @@ onMounted(async () => {
                 </form>
 
                 <!-- Resultado do pedido — Pagamento aprovado -->
-                <div v-if="orderResult && orderResult.payment_status === 'paid'" class="card border-success">
+                <div v-if="orderResult && orderResult.payment_status === 'paid'" class="card border-success mb-3">
                     <div class="card-body text-center py-4">
                         <i class="mdi mdi-check-circle text-success" style="font-size: 3rem;"></i>
                         <h5 class="mt-3">Pedido #{{ orderResult.id }} — Pagamento Aprovado!</h5>
@@ -573,7 +577,7 @@ onMounted(async () => {
                 </div>
 
                 <!-- Resultado do pedido — Pagamento falhou -->
-                <div v-else-if="orderResult && orderResult.payment_status === 'failed'" class="card border-danger">
+                <div v-else-if="orderResult && orderResult.payment_status === 'failed'" class="card border-danger mb-3">
                     <div class="card-body text-center py-4">
                         <i class="mdi mdi-close-circle text-danger" style="font-size: 3rem;"></i>
                         <h5 class="mt-3">Pedido #{{ orderResult.id }} — Pagamento Recusado</h5>
@@ -595,7 +599,7 @@ onMounted(async () => {
                 </div>
 
                 <!-- Resultado do pedido — Outros gateways / status pendente -->
-                <div v-else-if="orderResult" class="card border-warning">
+                <div v-else-if="orderResult" class="card border-warning mb-3">
                     <div class="card-body text-center py-4">
                         <i class="mdi mdi-clock-outline text-warning" style="font-size: 3rem;"></i>
                         <h5 class="mt-3">Pedido #{{ orderResult.id }} criado!</h5>
