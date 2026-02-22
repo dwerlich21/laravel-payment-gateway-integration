@@ -1,6 +1,6 @@
 # Payment Gateway Integration
 
-![Build](https://github.com/YOUR_USER/laravel-payment-gateway-integration/actions/workflows/tests.yml/badge.svg)
+![Build](https://github.com/dwerlich21/laravel-payment-gateway-integration/actions/workflows/tests.yml/badge.svg)
 ![PHP](https://img.shields.io/badge/PHP-8.2%2B-blue)
 ![Laravel](https://img.shields.io/badge/Laravel-12-red)
 ![Vue](https://img.shields.io/badge/Vue-3-green)
@@ -94,13 +94,6 @@ php artisan db:seed
 # Frontend
 cd ../front
 yarn install
-```
-
-### Docker Compose
-
-```bash
-docker compose up -d
-docker compose exec app php artisan migrate --seed
 ```
 
 ### Running / Executando
