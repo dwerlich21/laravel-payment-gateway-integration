@@ -32,6 +32,10 @@ const form = ref({
     customer_email: '',
     customer_cpf_cnpj: '',
     customer_phone: '',
+    card_number: '',
+    card_holder: '',
+    card_expiry: '',
+    card_cvv: '',
 });
 
 const title = 'Checkout';
@@ -59,12 +63,24 @@ const isStripeCard = computed(() => {
     return form.value.gateway === 'stripe' && form.value.payment_method === 'credit_card';
 });
 
+const isAsaasCard = computed(() => {
+    return form.value.gateway === 'asaas' && form.value.payment_method === 'credit_card';
+});
+
 function onGatewayChange() {
+    clearCardFields();
     if (form.value.gateway === 'stripe') {
         form.value.payment_method = 'credit_card';
     } else {
         form.value.payment_method = 'pix';
     }
+}
+
+function clearCardFields() {
+    form.value.card_number = '';
+    form.value.card_holder = '';
+    form.value.card_expiry = '';
+    form.value.card_cvv = '';
 }
 
 function formatPrice(price) {
@@ -98,6 +114,20 @@ function applyPhoneMask(event) {
         value = value.replace(/(\d{5})(\d{1,4})$/, '$1-$2');
     }
     form.value.customer_phone = value;
+}
+
+function applyCardNumberMask(event) {
+    let value = event.target.value.replace(/\D/g, '').substring(0, 16);
+    value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+    form.value.card_number = value;
+}
+
+function applyCardExpiryMask(event) {
+    let value = event.target.value.replace(/\D/g, '').substring(0, 4);
+    if (value.length > 2) {
+        value = value.substring(0, 2) + '/' + value.substring(2);
+    }
+    form.value.card_expiry = value;
 }
 
 function mountStripeCard() {
@@ -141,6 +171,14 @@ watch(isStripeCard, (newVal) => {
     }
 });
 
+function parseCardExpiry() {
+    const parts = form.value.card_expiry.split('/');
+    const month = (parts[0] || '').padStart(2, '0');
+    const yearShort = parts[1] || '';
+    const year = yearShort.length === 2 ? '20' + yearShort : yearShort;
+    return { month, year };
+}
+
 async function submitOrder() {
     submitting.value = true;
     orderResult.value = null;
@@ -164,6 +202,15 @@ async function submitOrder() {
                 customer_cpf_cnpj: form.value.customer_cpf_cnpj.replace(/\D/g, ''),
                 customer_phone: form.value.customer_phone.replace(/\D/g, ''),
             };
+
+            if (isAsaasCard.value) {
+                const expiry = parseCardExpiry();
+                data.card_number = form.value.card_number.replace(/\s/g, '');
+                data.card_holder = form.value.card_holder;
+                data.card_expiry_month = expiry.month;
+                data.card_expiry_year = expiry.year;
+                data.card_cvv = form.value.card_cvv;
+            }
 
             const result = await orderService.checkout(data);
             order = result.data;
@@ -209,6 +256,9 @@ async function submitOrder() {
                     payment_status: paymentIntent.status,
                 };
             }
+        } else if (order.payment_status) {
+            pendingOrder.value = null;
+            orderResult.value = order;
         } else {
             pendingOrder.value = null;
             orderResult.value = order;
@@ -445,39 +495,49 @@ onMounted(async () => {
                                     <label for="card_number" class="form-label">Numero do cartao</label>
                                     <input
                                         id="card_number"
+                                        :value="form.card_number"
                                         type="text"
                                         class="form-control"
                                         placeholder="0000 0000 0000 0000"
                                         maxlength="19"
+                                        required
+                                        @input="applyCardNumberMask"
                                     />
                                 </div>
                                 <div class="col-md-4">
                                     <label for="card_holder" class="form-label">Nome no cartao</label>
                                     <input
                                         id="card_holder"
+                                        v-model="form.card_holder"
                                         type="text"
                                         class="form-control"
                                         placeholder="Como esta no cartao"
+                                        required
                                     />
                                 </div>
                                 <div class="col-md-4">
                                     <label for="card_expiry" class="form-label">Validade</label>
                                     <input
                                         id="card_expiry"
+                                        :value="form.card_expiry"
                                         type="text"
                                         class="form-control"
                                         placeholder="MM/AA"
                                         maxlength="5"
+                                        required
+                                        @input="applyCardExpiryMask"
                                     />
                                 </div>
                                 <div class="col-md-4">
                                     <label for="card_cvv" class="form-label">CVV</label>
                                     <input
                                         id="card_cvv"
+                                        v-model="form.card_cvv"
                                         type="text"
                                         class="form-control"
                                         placeholder="000"
                                         maxlength="4"
+                                        required
                                     />
                                 </div>
                             </div>
@@ -614,6 +674,12 @@ onMounted(async () => {
                         <p class="text-muted">
                             O pagamento esta sendo processado.
                         </p>
+                        <div v-if="orderResult.invoice_url" class="mb-3">
+                            <a :href="orderResult.invoice_url" target="_blank" class="btn btn-soft-info">
+                                <i class="mdi mdi-open-in-new me-1"/>
+                                Abrir link de pagamento
+                            </a>
+                        </div>
                         <div class="d-flex justify-content-center gap-2 mt-3">
                             <router-link to="/" class="btn btn-soft-primary">
                                 Comprar outro produto

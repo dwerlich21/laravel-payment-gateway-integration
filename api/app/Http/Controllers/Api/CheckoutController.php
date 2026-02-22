@@ -52,7 +52,7 @@ class CheckoutController
 
             $configuredGateways = array_keys(config('payment.gateways', []));
 
-            $validator = Validator::make($request->all(), [
+            $rules = [
                 'product_id' => 'required|exists:products,id',
                 'gateway' => ['required', 'in:'.implode(',', $configuredGateways)],
                 'quantity' => 'sometimes|integer|min:1',
@@ -61,7 +61,20 @@ class CheckoutController
                 'customer_email' => 'required|email|max:255',
                 'customer_cpf_cnpj' => 'required|string|max:20',
                 'customer_phone' => 'sometimes|string|max:20',
-            ], [], [
+            ];
+
+            $isAsaasCard = $request->input('gateway') === 'asaas'
+                && $request->input('payment_method') === 'credit_card';
+
+            if ($isAsaasCard) {
+                $rules['card_number'] = 'required|string|max:20';
+                $rules['card_holder'] = 'required|string|max:255';
+                $rules['card_expiry_month'] = 'required|string|size:2';
+                $rules['card_expiry_year'] = 'required|string|size:4';
+                $rules['card_cvv'] = 'required|string|max:4';
+            }
+
+            $validator = Validator::make($request->all(), $rules, [], [
                 'product_id' => 'produto',
                 'gateway' => 'gateway de pagamento',
                 'quantity' => 'quantidade',
@@ -70,6 +83,11 @@ class CheckoutController
                 'customer_email' => 'e-mail do cliente',
                 'customer_cpf_cnpj' => 'CPF/CNPJ',
                 'customer_phone' => 'telefone',
+                'card_number' => 'número do cartão',
+                'card_holder' => 'nome no cartão',
+                'card_expiry_month' => 'mês de validade',
+                'card_expiry_year' => 'ano de validade',
+                'card_cvv' => 'CVV',
             ]);
 
             if ($validator->fails()) {
@@ -78,19 +96,43 @@ class CheckoutController
 
             $order = $this->orderService->createFromCheckout($request->all());
 
-            $gateway = $this->paymentManager->gateway($order->gateway);
-            $chargeResult = $gateway->createCharge([
+            $chargeData = [
                 'order_id' => $order->id,
                 'amount' => $order->total_amount,
                 'description' => "Pedido #{$order->id}",
-            ]);
+                'payment_method' => $order->payment_method,
+                'customer_name' => $order->customer_name,
+                'customer_email' => $order->customer_email,
+                'customer_cpf_cnpj' => $order->customer_cpf_cnpj,
+                'customer_phone' => $order->customer_phone,
+            ];
 
-            $order->update([
+            if ($isAsaasCard) {
+                $chargeData['card_number'] = $request->input('card_number');
+                $chargeData['card_holder'] = $request->input('card_holder');
+                $chargeData['card_expiry_month'] = $request->input('card_expiry_month');
+                $chargeData['card_expiry_year'] = $request->input('card_expiry_year');
+                $chargeData['card_cvv'] = $request->input('card_cvv');
+                $chargeData['remote_ip'] = $request->ip();
+            }
+
+            $gateway = $this->paymentManager->gateway($order->gateway);
+            $chargeResult = $gateway->createCharge($chargeData);
+
+            $updateData = [
                 'external_id' => $chargeResult['external_id'] ?? null,
-            ]);
+            ];
+
+            if (isset($chargeResult['status']) && in_array($chargeResult['status'], ['paid', 'failed'])) {
+                $updateData['status'] = $chargeResult['status'];
+            }
+
+            $order->update($updateData);
 
             $response = $order->load('product')->toArray();
             $response['client_secret'] = $chargeResult['client_secret'] ?? null;
+            $response['payment_status'] = $chargeResult['status'] ?? $order->status;
+            $response['invoice_url'] = $chargeResult['invoice_url'] ?? null;
 
             return $this->successResponse($response, 'Pedido criado com sucesso!', 201);
 

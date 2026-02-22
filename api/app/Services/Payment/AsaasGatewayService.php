@@ -33,21 +33,47 @@ class AsaasGatewayService implements PaymentGatewayInterface
     /**
      * Cria uma cobrança no Asaas.
      *
-     * Envia POST para /payments com os dados do cliente, tipo de cobrança,
-     * valor e descrição. Retorna o ID externo, status e URL do boleto/invoice.
+     * Cria o customer via API, monta o payload de pagamento e,
+     * para cartão de crédito, inclui creditCard + creditCardHolderInfo
+     * para processamento síncrono.
      */
     public function createCharge(array $data): array
     {
         try {
-            $response = Http::withHeaders([
-                'access_token' => $this->apiKey,
-            ])->post("{$this->baseUrl}/payments", [
-                'customer' => $data['customer'],
-                'billingType' => $data['billing_type'] ?? 'UNDEFINED',
+            $customerId = $this->createCustomer($data);
+
+            $billingType = $this->resolveBillingType($data['payment_method'] ?? '');
+
+            $payload = [
+                'customer' => $customerId,
+                'billingType' => $billingType,
                 'value' => $data['amount'],
                 'description' => $data['description'] ?? 'Pagamento',
                 'dueDate' => $data['due_date'] ?? now()->addDays(3)->format('Y-m-d'),
-            ]);
+            ];
+
+            if ($billingType === 'CREDIT_CARD') {
+                $payload['creditCard'] = [
+                    'holderName' => $data['card_holder'],
+                    'number' => $data['card_number'],
+                    'expiryMonth' => $data['card_expiry_month'],
+                    'expiryYear' => $data['card_expiry_year'],
+                    'ccv' => $data['card_cvv'],
+                ];
+                $payload['creditCardHolderInfo'] = [
+                    'name' => $data['customer_name'],
+                    'email' => $data['customer_email'],
+                    'cpfCnpj' => $data['customer_cpf_cnpj'],
+                    'postalCode' => $data['customer_postal_code'] ?? '00000000',
+                    'addressNumber' => $data['customer_address_number'] ?? '0',
+                    'phone' => $data['customer_phone'] ?? '',
+                ];
+                $payload['remoteIp'] = $data['remote_ip'] ?? request()->ip();
+            }
+
+            $response = Http::withHeaders([
+                'access_token' => $this->apiKey,
+            ])->post("{$this->baseUrl}/payments", $payload);
 
             if ($response->failed()) {
                 $errors = $response->json('errors.0.description', 'Erro desconhecido');
@@ -58,7 +84,7 @@ class AsaasGatewayService implements PaymentGatewayInterface
 
             return [
                 'external_id' => $body['id'],
-                'status' => 'pending',
+                'status' => $this->mapAsaasStatus($body['status'] ?? ''),
                 'invoice_url' => $body['invoiceUrl'] ?? null,
             ];
         } catch (PaymentException $e) {
@@ -128,6 +154,41 @@ class AsaasGatewayService implements PaymentGatewayInterface
         $token = $request->header('asaas-access-token', '');
 
         return hash_equals($this->webhookToken, $token);
+    }
+
+    /**
+     * Cria um customer no Asaas via API.
+     */
+    private function createCustomer(array $data): string
+    {
+        $response = Http::withHeaders([
+            'access_token' => $this->apiKey,
+        ])->post("{$this->baseUrl}/customers", [
+            'name' => $data['customer_name'],
+            'email' => $data['customer_email'] ?? null,
+            'cpfCnpj' => $data['customer_cpf_cnpj'],
+            'phone' => $data['customer_phone'] ?? null,
+        ]);
+
+        if ($response->failed()) {
+            $errors = $response->json('errors.0.description', 'Erro desconhecido');
+            throw new PaymentException("Erro ao criar cliente no Asaas: {$errors}");
+        }
+
+        return $response->json('id');
+    }
+
+    /**
+     * Converte o payment_method interno para o billingType do Asaas.
+     */
+    private function resolveBillingType(string $paymentMethod): string
+    {
+        return match ($paymentMethod) {
+            'credit_card' => 'CREDIT_CARD',
+            'boleto' => 'BOLETO',
+            'pix' => 'PIX',
+            default => 'UNDEFINED',
+        };
     }
 
     /**
