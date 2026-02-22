@@ -1,417 +1,250 @@
-# Auth-Cookies Frontend (Vue 3)
+# Frontend — Vue 3 SPA
 
-A Vue 3 frontend application with cookie-based authentication, built using the Composition API and featuring a complete CRUD system with reusable components.
+Vue 3 single-page application with cookie-based authentication, built using the Composition API. Features a complete CRUD system with reusable base components, payment checkout, and role-based permission control.
 
-## Table of Contents
+Aplicação single-page em Vue 3 com autenticação baseada em cookies, construída com a Composition API. Inclui um sistema CRUD completo com componentes base reutilizáveis, checkout de pagamento e controle de permissões por papel.
 
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Architecture](#architecture)
-- [Authentication System](#authentication-system)
-- [Technical Decisions](#technical-decisions)
-- [Key Components](#key-components)
-- [State Management](#state-management)
-- [Development Commands](#development-commands)
+---
 
-## Requirements
+## Requirements / Pré-requisitos
 
 - Node.js 18+
-- Yarn (preferred over npm)
+- Yarn (use yarn, not npm / use yarn, não npm)
 
-## Installation
+## Installation / Instalação
 
 ```bash
-# Navigate to front directory
 cd front
-
-# Copy environment configuration
-cd src
-cp env.example.js env.js
-cd ..
-
-# Install dependencies (use yarn, not npm)
+cp src/env.example.js src/env.js    # Configure environment / Configurar ambiente
 yarn install
-
-# Start development server
-yarn dev
 ```
 
-### Environment Configuration
+### Environment Configuration / Configuração de Ambiente
 
-Edit `src/env.js` with your settings:
+Edit `src/env.js` with your settings / Edite `src/env.js` com suas configurações:
 
 ```javascript
 export default {
   API_URL: 'http://localhost:8000/api',
-  APP_NAME: 'Auth Cookies',
-  // Add other environment variables as needed
+  APP_NAME: 'Libertas',
 }
 ```
 
-## Architecture
+## Commands / Comandos
 
-### Directory Structure
+```bash
+yarn dev       # Dev server on :8080 (proxies API to :8000)
+               # Servidor dev em :8080 (proxy para API :8000)
+yarn build     # Production build / Build de produção
+yarn preview   # Preview production build / Pré-visualizar build
+yarn lint      # ESLint fix / Corrigir ESLint
+```
+
+## Architecture / Arquitetura
+
+### Directory Structure / Estrutura de Diretórios
 
 ```
 src/
 ├── assets/
-│   └── scss/           # SCSS styles with corporate theme
+│   └── scss/              # SCSS styles with corporate theme
+│                          # Estilos SCSS com tema corporativo
 ├── components/
-│   ├── base/           # Reusable base components
-│   │   ├── Crud.vue    # Complete CRUD component
-│   │   ├── TableLists.vue
-│   │   ├── ModalForm.vue
-│   │   └── ...
-│   └── widgets/        # Dashboard widgets
-├── composables/        # Vue 3 composables
-│   ├── cruds.js        # CRUD operation helpers
-│   ├── messages.js     # Notification helpers
-│   └── functions.js    # Utility functions
+│   ├── base/              # Reusable CRUD components / Componentes CRUD reutilizáveis
+│   │   ├── Crud.vue       # Full CRUD interface / Interface CRUD completa
+│   │   ├── TableLists.vue # Configurable data tables / Tabelas configuráveis
+│   │   ├── ModalForm.vue  # Form modals / Modais de formulário
+│   │   ├── Filter.vue     # Filtering component / Componente de filtro
+│   │   ├── Actions.vue    # Row actions / Ações de linha
+│   │   └── Pagination.vue # Pagination / Paginação
+│   ├── dashboard/         # Dashboard widgets
+│   └── layouts/           # Layout components / Componentes de layout
+├── composables/           # Vue 3 composables
+│   ├── cruds.js           # CRUD state management / Gerenciamento de estado CRUD
+│   ├── messages.js        # Notification helpers / Helpers de notificação
+│   ├── functions.js       # Utility functions / Funções utilitárias
+│   ├── masks.js           # Input mask patterns / Máscaras de input
+│   └── setSessions.js     # Filter persistence (localStorage)
+│                          # Persistência de filtros (localStorage)
+├── directives/
+│   └── permission.js      # v-permission directive / Diretiva v-permission
 ├── http/
-│   └── index.js        # Axios configuration with interceptors
+│   └── index.js           # Axios config (withCredentials: true)
 ├── router/
-│   └── index.js        # Vue Router with auth guards
-├── services/           # API service classes
-│   ├── BaseService.js  # Base service with CRUD methods
-│   ├── AuthService.js
-│   └── UserService.js
-├── stores/             # Pinia stores
-│   ├── auth.js         # Authentication state
-│   └── layout.js       # Layout/UI state
-└── views/              # Page components
-    ├── auth/           # Login, Register, Password Reset
-    └── users/          # User management pages
+│   ├── index.js           # Vue Router with auth guards / Com guardas de autenticação
+│   └── routes.js          # Route definitions / Definições de rotas
+├── services/              # API service classes / Classes de serviço da API
+│   ├── BaseService.js     # Base class with CRUD methods / Classe base com métodos CRUD
+│   ├── AuthService.js     # Authentication / Autenticação
+│   ├── ProductService.js  # Products / Produtos
+│   ├── OrderService.js    # Orders / Pedidos
+│   └── UserService.js     # Users / Usuários
+├── stores/                # Pinia stores
+│   ├── auth.js            # Auth state / Estado de autenticação
+│   ├── layout.js          # Layout/theme state / Estado de layout/tema
+│   └── notification.js    # Notification state / Estado de notificações
+└── views/                 # Page components / Componentes de página
+    ├── account/           # Login, ForgotPassword, Logout
+    ├── dashboard/         # Dashboard
+    ├── products/          # Checkout
+    ├── profile/           # MyProfile
+    └── users/             # User management / Gestão de usuários
 ```
 
-### Design Patterns
+### Design Patterns / Padrões de Projeto
 
-#### Composables Pattern
-Vue 3 Composition API composables for reusable logic:
-- `useCrud()` - Complete CRUD operations with form handling
-- `useMessages()` - Notification system integration
-- `useFunctions()` - Common utility functions
+#### Service Layer / Camada de Serviço
 
-#### Service Layer Pattern
-API interactions are encapsulated in service classes:
-- Extends `BaseService` for consistent CRUD operations
-- Handles request/response transformation
-- Centralizes endpoint definitions
+All HTTP calls go through services extending `BaseService`. Never call axios directly from components.
 
-#### Base Components Pattern
-Reusable components for common UI patterns:
-- `Crud.vue` - Full CRUD interface (table + modal form)
-- `TableLists.vue` - Configurable data tables
-- `ModalForm.vue` - Form modals with validation
+Todas as chamadas HTTP passam por services que estendem `BaseService`. Nunca chame axios diretamente de componentes.
 
-## Authentication System
-
-### How It Works
-
-The frontend relies entirely on HttpOnly cookies set by the backend:
-
-```
-1. User submits login form
-              ↓
-2. AuthService.login() sends credentials to API
-              ↓
-3. API validates and sets HttpOnly cookies (access_token, refresh_token)
-              ↓
-4. Frontend receives user data (no token handling needed!)
-              ↓
-5. Subsequent requests automatically include cookies
-              ↓
-6. Token refresh happens transparently on backend
-```
-
-### Why No Token Storage in Frontend?
-
-1. **Security**: HttpOnly cookies cannot be accessed by JavaScript (XSS protection)
-2. **Simplicity**: No need to manage token storage, refresh logic, or attach headers
-3. **Automatic**: Browser handles cookie transmission automatically
-
-### Authentication Flow Implementation
-
-#### Login (`src/services/AuthService.js`)
 ```javascript
-async login(credentials) {
-  const response = await http.post('/auth/login', credentials)
-  // Cookies are automatically set by browser from response
-  return response.data.user
+class ProductService extends BaseService {
+  constructor() { super('products') }
+  // Inherits: index(), getById(), save(), delete(), bulkDelete(), bulkChangeActive()
+  // Herda: index(), getById(), save(), delete(), bulkDelete(), bulkChangeActive()
 }
 ```
 
-#### Axios Configuration (`src/http/index.js`)
-```javascript
-const http = axios.create({
-  baseURL: env.API_URL,
-  withCredentials: true, // Essential! Sends cookies with requests
-})
-```
+#### Composables Pattern / Padrão de Composables
 
-#### Route Guards (`src/router/index.js`)
-```javascript
-router.beforeEach(async (to, from, next) => {
-  const authStore = useAuthStore()
+Reusable logic extracted into composables / Lógica reutilizável extraída em composables:
 
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next('/login')
-  } else {
-    next()
-  }
-})
-```
+- `useCrud(service, defaultFormData, sessionName)` — CRUD state, save, delete, pagination
+- `useMessages()` — `notifySuccess()`, `notifyError()`, SweetAlert confirmations
+- `setSessions()` — persist filters in localStorage between page visits / persistir filtros no localStorage
 
-## Technical Decisions
+#### Base Components / Componentes Base
 
-### Why Vue 3 Composition API?
-
-- **Better TypeScript support**: Improved type inference
-- **Code organization**: Logic can be grouped by feature, not option type
-- **Reusability**: Composables enable clean logic extraction
-- **Performance**: Better tree-shaking and bundle optimization
-
-### Why Pinia over Vuex?
-
-- **Simpler API**: No mutations, just state and actions
-- **TypeScript native**: Built with TypeScript from the ground up
-- **Devtools support**: Full Vue Devtools integration
-- **Modular by design**: Each store is independent
-
-### Why Yarn over npm?
-
-- **Deterministic**: Lockfile ensures consistent installs
-- **Faster**: Parallel installation and caching
-- **Workspaces**: Better monorepo support
-
-### Why Bootstrap Vue 3?
-
-- **Rapid development**: Pre-built components
-- **Consistency**: Uniform styling across the application
-- **Customizable**: SCSS variables for theming
-- **Accessibility**: Built-in ARIA support
-
-### Why Axios?
-
-- **Interceptors**: Easy request/response transformation
-- **Cancellation**: Request cancellation support
-- **Automatic transforms**: JSON parsing, error handling
-- **Browser + Node**: Universal support
-
-## Key Components
-
-### Crud.vue (`src/components/base/Crud.vue`)
-
-Complete CRUD interface combining table and form:
+Compose together for standard CRUD pages / Compostos juntos para páginas CRUD padrão:
 
 ```vue
 <template>
-  <Crud
-    :service="userService"
-    :columns="columns"
-    :form-fields="formFields"
-    title="Users"
-  />
+  <Crud title="Products" :service="productService">
+    <template #table>
+      <TableLists :columns="columns" :keys="keys" :items="items">
+        <template #actions="{ item }">
+          <Actions :item="item" :types="actionTypes" />
+        </template>
+      </TableLists>
+    </template>
+    <template #modal>
+      <ModalForm :formData="formData" @save="save" />
+    </template>
+  </Crud>
 </template>
 ```
 
-Features:
-- Automatic pagination
-- Search and filtering
-- Create/Edit/Delete actions
-- Form validation
-- Loading states
+## Authentication System / Sistema de Autenticação
 
-### useCrud Composable (`src/composables/cruds.js`)
+The frontend relies entirely on HttpOnly cookies set by the backend. No tokens are stored in JavaScript.
 
-Provides CRUD operations for any entity:
+O frontend depende inteiramente de cookies HttpOnly definidos pelo backend. Nenhum token é armazenado no JavaScript.
 
-```javascript
-const {
-  items,
-  loading,
-  pagination,
-  fetchItems,
-  createItem,
-  updateItem,
-  deleteItem,
-} = useCrud(userService)
+```
+1. User submits login / Usuário envia login
+              ↓
+2. API validates + sets HttpOnly cookies (access 15min + refresh 7d)
+   API valida + define cookies HttpOnly
+              ↓
+3. Browser sends cookies automatically on every request
+   Navegador envia cookies automaticamente em cada requisição
+              ↓
+4. Token refresh is transparent (backend middleware)
+   Refresh de token é transparente (middleware do backend)
 ```
 
-### BaseService (`src/services/BaseService.js`)
-
-Base class for API services:
+### Key configuration / Configuração chave:
 
 ```javascript
-class UserService extends BaseService {
-  constructor() {
-    super('/users')
-  }
-
-  // Custom methods
-  async changePassword(id, data) {
-    return this.http.post(`${this.endpoint}/${id}/change-password`, data)
-  }
-}
-```
-
-## State Management
-
-### Auth Store (`src/stores/auth.js`)
-
-Manages authentication state:
-
-```javascript
-export const useAuthStore = defineStore('auth', {
-  state: () => ({
-    user: null,
-    isAuthenticated: false,
-  }),
-
-  actions: {
-    async login(credentials) {
-      const user = await authService.login(credentials)
-      this.user = user
-      this.isAuthenticated = true
-    },
-
-    async logout() {
-      await authService.logout()
-      this.user = null
-      this.isAuthenticated = false
-    },
-
-    async checkAuth() {
-      try {
-        const user = await authService.me()
-        this.user = user
-        this.isAuthenticated = true
-      } catch {
-        this.isAuthenticated = false
-      }
-    },
-  },
-})
-```
-
-### Layout Store (`src/stores/layout.js`)
-
-Manages UI state (sidebar, theme, etc.):
-
-```javascript
-export const useLayoutStore = defineStore('layout', {
-  state: () => ({
-    sidebarCollapsed: false,
-    theme: 'light',
-  }),
-
-  actions: {
-    toggleSidebar() {
-      this.sidebarCollapsed = !this.sidebarCollapsed
-    },
-  },
-})
-```
-
-## HTTP Configuration
-
-### Axios Setup (`src/http/index.js`)
-
-```javascript
-import axios from 'axios'
-import env from '@/env'
-
+// src/http/index.js
 const http = axios.create({
   baseURL: env.API_URL,
-  withCredentials: true, // Required for cookies!
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-  },
+  withCredentials: true,  // Required for cookies! / Obrigatório para cookies!
 })
-
-// Response interceptor for error handling
-http.interceptors.response.use(
-  response => response,
-  error => {
-    if (error.response?.status === 401) {
-      // Redirect to login
-      window.location.href = '/login'
-    }
-    return Promise.reject(error)
-  }
-)
-
-export default http
 ```
 
-## Development Commands
+### Route Guards / Guardas de Rota
 
-```bash
-# Install dependencies
-yarn install
+```javascript
+// Protected routes use / Rotas protegidas usam:
+meta: { authRequired: true }
 
-# Start development server with hot-reload
-yarn dev
-
-# Build for production
-yarn build
-
-# Preview production build
-yarn preview
-
-# Lint and fix files
-yarn lint
-
-# Type check (if using TypeScript)
-yarn type-check
+// Router checks / O router verifica:
+if (to.meta.authRequired && !authStore.loggedIn) → redirect to /login
 ```
 
-## Project Configuration
+### Permission Directive / Diretiva de Permissão
 
-### Vite Configuration (`vite.config.js`)
+```vue
+<!-- Element only visible if user has this permission -->
+<!-- Elemento só visível se o usuário tiver essa permissão -->
+<button v-permission="'users.create'">New User / Novo Usuário</button>
+```
 
-Key settings:
-- Path aliases (`@` for `src/`)
-- Proxy configuration for API requests (optional)
-- Build optimization settings
+## State Management / Gerenciamento de Estado
 
-### ESLint + Prettier
+Pinia stores for global concerns. No mutations — just state + actions.
 
-Code quality tools configured for:
-- Vue 3 specific rules
-- Composition API best practices
-- Consistent code formatting
+Pinia stores para estado global. Sem mutations — apenas state + actions.
 
-## Browser Support
+| Store          | Purpose / Propósito                                                |
+|----------------|--------------------------------------------------------------------|
+| `auth.js`      | Current user, login state, enums / Usuário atual, estado de login  |
+| `layout.js`    | Sidebar, theme, topbar / Barra lateral, tema, topbar               |
+| `notification` | Notification count and list / Contagem e lista de notificações     |
 
-- Chrome (latest)
-- Firefox (latest)
-- Safari (latest)
-- Edge (latest)
+> Entity-level CRUD state uses `useCrud` composable, not stores.
+> Estado CRUD de entidades usa o composable `useCrud`, não stores.
 
-Note: HttpOnly cookies require HTTPS in production for the `Secure` flag.
+## Key Dependencies / Dependências Principais
 
-## Troubleshooting
+| Package                  | Purpose / Propósito                                      |
+|--------------------------|----------------------------------------------------------|
+| `vue` 3                  | Framework                                                |
+| `vue-router` 4           | Routing / Roteamento                                     |
+| `pinia` 3                | State management / Gerenciamento de estado               |
+| `axios`                  | HTTP client                                              |
+| `bootstrap` 5            | CSS framework                                            |
+| `bootstrap-vue-3`        | Vue Bootstrap components / Componentes Bootstrap Vue     |
+| `apexcharts`             | Charts / Gráficos                                        |
+| `sweetalert2`            | Confirmation dialogs / Diálogos de confirmação           |
+| `notivue`                | Toast notifications / Notificações toast                 |
+| `flatpickr`              | Date picker / Seletor de data                            |
+| `maska`                  | Input masks / Máscaras de input                          |
+| `date-fns`               | Date utilities / Utilitários de data                     |
 
-### Cookies not being sent
+## Vite Configuration / Configuração do Vite
 
-1. Ensure `withCredentials: true` in Axios config
-2. Check CORS configuration on backend
-3. Verify `SANCTUM_STATEFUL_DOMAINS` includes frontend URL
+Key settings from `vite.config.js` / Configurações principais:
 
-### 401 errors after login
+- **Port / Porta**: 8080
+- **API Proxy**: `/api` → `http://localhost:8000` (dev only / somente em dev)
+- **Path alias**: `@` → `src/`
+- **Build chunks**: vendor (vue, router, pinia, axios), bootstrap, utils
 
-1. Check if cookies are being set (DevTools > Application > Cookies)
-2. Verify backend `SESSION_DOMAIN` matches frontend domain
-3. Ensure frontend and backend are on same domain (or properly configured for cross-origin)
+## Troubleshooting / Solução de Problemas
 
-### CORS errors
+### Cookies not being sent / Cookies não estão sendo enviados
 
-Backend must allow:
-- Origin: Your frontend URL
+1. Ensure `withCredentials: true` in Axios config / Verifique `withCredentials: true` na config do Axios
+2. Check CORS configuration on backend / Verifique a configuração de CORS no backend
+3. Verify `CORS_ALLOWED_ORIGINS` includes frontend URL / Verifique se inclui a URL do frontend
+
+### 401 errors after login / Erros 401 após login
+
+1. Check if cookies are set (DevTools > Application > Cookies) / Verifique se os cookies foram definidos
+2. Verify backend `SESSION_DOMAIN` matches frontend domain / Verifique se o domínio está correto
+3. Ensure same domain or proper CORS config / Mesmo domínio ou CORS configurado
+
+### CORS errors / Erros de CORS
+
+Backend must allow / O backend deve permitir:
+- Origin: frontend URL
 - Credentials: true
 - Headers: Content-Type, Accept, X-Requested-With
 
-## License
+## License / Licença
 
-This project is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+MIT
