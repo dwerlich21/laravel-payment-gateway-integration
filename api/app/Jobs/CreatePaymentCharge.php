@@ -32,19 +32,20 @@ class CreatePaymentCharge implements ShouldQueue
     {
         try {
             $result = $paymentManager->gateway($this->order->gateway)->createCharge([
-                'order_id'     => $this->order->id,
-                'amount'       => $this->order->total_amount,
-                'description'  => "Pedido #{$this->order->id}",
+                'order_id' => $this->order->id,
+                'amount' => $this->order->total_amount,
+                'description' => "Pedido #{$this->order->id}",
             ]);
 
             $this->order->update([
                 'external_id' => $result['external_id'] ?? null,
+                'payment_url' => $result['checkout_url'] ?? $result['invoice_url'] ?? null,
             ]);
         } catch (\Throwable $e) {
             Log::error('Falha ao criar cobrança', [
                 'order_id' => $this->order->id,
-                'gateway'  => $this->order->gateway,
-                'error'    => $e->getMessage(),
+                'gateway' => $this->order->gateway,
+                'error' => $e->getMessage(),
             ]);
 
             $this->order->update(['status' => Order::STATUS_FAILED]);

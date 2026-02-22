@@ -24,21 +24,45 @@ class OrderService extends BaseService
         $gateway = $data['gateway'] ?? config('payment.default');
 
         $order = $this->repository->create([
-            'user_id'           => auth()->id(),
-            'product_id'        => $product->id,
-            'quantity'          => $quantity,
-            'total_amount'      => $product->price * $quantity,
-            'status'            => Order::STATUS_PENDING,
-            'gateway'           => $gateway,
-            'payment_method'    => $data['payment_method'] ?? 'credit_card',
-            'customer_name'     => $data['customer_name'] ?? null,
-            'customer_email'    => $data['customer_email'] ?? null,
+            'user_id' => auth()->id(),
+            'product_id' => $product->id,
+            'quantity' => $quantity,
+            'total_amount' => $product->price * $quantity,
+            'status' => Order::STATUS_PENDING,
+            'gateway' => $gateway,
+            'payment_method' => $data['payment_method'] ?? 'credit_card',
+            'customer_name' => $data['customer_name'] ?? null,
+            'customer_email' => $data['customer_email'] ?? null,
             'customer_cpf_cnpj' => $data['customer_cpf_cnpj'] ?? null,
-            'customer_phone'    => $data['customer_phone'] ?? null,
+            'customer_phone' => $data['customer_phone'] ?? null,
         ]);
 
         CreatePaymentCharge::dispatch($order);
 
         return $order->load('product');
+    }
+
+    /**
+     * Cria um pedido a partir do checkout público (sem autenticação).
+     */
+    public function createFromCheckout(array $data): Order
+    {
+        $product = Product::findOrFail($data['product_id']);
+        $quantity = $data['quantity'] ?? 1;
+        $gateway = $data['gateway'] ?? config('payment.default');
+
+        return $this->repository->create([
+            'user_id' => auth()->id(),
+            'product_id' => $product->id,
+            'quantity' => $quantity,
+            'total_amount' => $product->price * $quantity,
+            'status' => Order::STATUS_PENDING,
+            'gateway' => $gateway,
+            'payment_method' => $data['payment_method'] ?? 'credit_card',
+            'customer_name' => $data['customer_name'] ?? null,
+            'customer_email' => $data['customer_email'] ?? null,
+            'customer_cpf_cnpj' => $data['customer_cpf_cnpj'] ?? null,
+            'customer_phone' => $data['customer_phone'] ?? null,
+        ]);
     }
 }

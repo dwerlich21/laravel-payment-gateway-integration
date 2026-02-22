@@ -16,9 +16,12 @@ class Order extends Model
     /**
      * Status do pedido
      */
-    const STATUS_PENDING  = 'pending';
-    const STATUS_PAID     = 'paid';
-    const STATUS_FAILED   = 'failed';
+    const STATUS_PENDING = 'pending';
+
+    const STATUS_PAID = 'paid';
+
+    const STATUS_FAILED = 'failed';
+
     const STATUS_REFUNDED = 'refunded';
 
     /**
@@ -39,6 +42,7 @@ class Order extends Model
         'customer_cpf_cnpj',
         'customer_phone',
         'external_id',
+        'payment_url',
     ];
 
     /**
@@ -50,7 +54,7 @@ class Order extends Model
     {
         return [
             'total_amount' => 'decimal:2',
-            'quantity'     => 'integer',
+            'quantity' => 'integer',
         ];
     }
 

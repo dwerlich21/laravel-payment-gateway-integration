@@ -1,14 +1,13 @@
 <?php
 
 use App\Http\Controllers\Api\AuditController;
+use App\Http\Controllers\Api\CheckoutController;
 use App\Http\Controllers\Api\EnumController;
-use App\Http\Controllers\Api\GoalController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\OrderController;
-use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\ProductController;
-use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\WebhookController;
 use App\Http\Controllers\LoginController;
 use Illuminate\Support\Facades\Route;
 
@@ -32,6 +31,24 @@ Route::group(['prefix' => 'v1'], function () {
     |--------------------------------------------------------------------------
     */
     Route::get('products', [ProductController::class, 'index'])->name('products.index');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Rotas públicas — Checkout
+    |--------------------------------------------------------------------------
+    */
+    Route::get('checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+    Route::post('checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Webhooks — recebimento de notificações dos gateways
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('webhooks')->middleware('throttle:60,1')->group(function () {
+        Route::post('stripe', [WebhookController::class, 'handleStripe'])->name('webhooks.stripe');
+        Route::post('asaas', [WebhookController::class, 'handleAsaas'])->name('webhooks.asaas');
+    });
 
     Route::group([
         'middleware' => [
@@ -57,7 +74,6 @@ Route::group(['prefix' => 'v1'], function () {
         | Rotas protegidas por permissão
         |--------------------------------------------------------------------------
         */
-
 
         /*
         |--------------------------------------------------------------------------
