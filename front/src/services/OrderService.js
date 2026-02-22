@@ -7,11 +7,30 @@ export default class OrderService {
         this.spinner = useGlobalSpinner();
     }
 
+    async getCheckoutConfig() {
+        try {
+            const response = await http.get('checkout');
+            return response.data.data || {};
+        } catch (error) {
+            notifyError(error.response?.data || 'Erro ao carregar configuração de checkout');
+            throw error;
+        }
+    }
+
+    async confirmPayment(orderId, customerData = {}) {
+        try {
+            const response = await http.put(`checkout/${orderId}/confirm`, customerData);
+            return response.data;
+        } catch (error) {
+            console.error('Erro ao confirmar pagamento:', error);
+            throw error;
+        }
+    }
+
     async checkout(data) {
         try {
             this.spinner.showDataSpinner({message: 'Processando pedido...', zIndex: 99});
             const response = await http.post('checkout', data);
-            notifySuccess(response.data.message || 'Pedido criado com sucesso!');
             return response.data;
         } catch (error) {
             notifyError(error.response?.data || 'Erro ao criar pedido');

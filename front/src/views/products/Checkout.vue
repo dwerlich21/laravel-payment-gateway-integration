@@ -1,6 +1,7 @@
 <script setup>
-import {ref, computed, onMounted} from 'vue';
+import {ref, computed, onMounted, watch} from 'vue';
 import {useRoute} from 'vue-router';
+import {loadStripe} from '@stripe/stripe-js';
 import Layout from '@/components/layouts/main.vue';
 import PageHeader from '@/components/layouts/page-header.vue';
 import ProductService from '@/services/ProductService';
@@ -14,6 +15,13 @@ const product = ref(null);
 const loading = ref(true);
 const submitting = ref(false);
 const orderResult = ref(null);
+const paymentError = ref(null);
+const pendingOrder = ref(null);
+
+// Stripe
+let stripe = null;
+let cardElement = null;
+const stripeReady = ref(false);
 
 const form = ref({
     gateway: 'stripe',
@@ -44,6 +52,10 @@ const availablePaymentMethods = computed(() => {
 
 const showCardFields = computed(() => {
     return form.value.payment_method === 'credit_card';
+});
+
+const isStripeCard = computed(() => {
+    return form.value.gateway === 'stripe' && form.value.payment_method === 'credit_card';
 });
 
 function onGatewayChange() {
@@ -87,22 +99,116 @@ function applyPhoneMask(event) {
     form.value.customer_phone = value;
 }
 
+function mountStripeCard() {
+    if (!stripe || !isStripeCard.value) return;
+
+    const elements = stripe.elements();
+    cardElement = elements.create('card', {
+        style: {
+            base: {
+                fontSize: '16px',
+                color: '#495057',
+                fontFamily: '"Source Sans Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                '::placeholder': { color: '#aab7c4' },
+            },
+            invalid: { color: '#dc3545' },
+        },
+        hidePostalCode: true,
+    });
+
+    const container = document.getElementById('card-element');
+    if (container) {
+        cardElement.mount('#card-element');
+        stripeReady.value = true;
+    }
+}
+
+function unmountStripeCard() {
+    if (cardElement) {
+        cardElement.unmount();
+        cardElement = null;
+        stripeReady.value = false;
+    }
+}
+
+watch(isStripeCard, (newVal) => {
+    if (newVal) {
+        setTimeout(mountStripeCard, 100);
+    } else {
+        unmountStripeCard();
+    }
+});
+
 async function submitOrder() {
     submitting.value = true;
     orderResult.value = null;
+    paymentError.value = null;
+
     try {
-        const data = {
-            product_id: product.value.id,
-            quantity: form.value.quantity,
-            gateway: form.value.gateway,
-            payment_method: form.value.payment_method,
-            customer_name: form.value.customer_name,
-            customer_email: form.value.customer_email,
-            customer_cpf_cnpj: form.value.customer_cpf_cnpj.replace(/\D/g, ''),
-            customer_phone: form.value.customer_phone.replace(/\D/g, ''),
-        };
-        const result = await orderService.checkout(data);
-        orderResult.value = result;
+        let order;
+        let clientSecret;
+
+        if (pendingOrder.value) {
+            order = pendingOrder.value.order;
+            clientSecret = pendingOrder.value.clientSecret;
+        } else {
+            const data = {
+                product_id: product.value.id,
+                quantity: form.value.quantity,
+                gateway: form.value.gateway,
+                payment_method: form.value.payment_method,
+                customer_name: form.value.customer_name,
+                customer_email: form.value.customer_email,
+                customer_cpf_cnpj: form.value.customer_cpf_cnpj.replace(/\D/g, ''),
+                customer_phone: form.value.customer_phone.replace(/\D/g, ''),
+            };
+
+            const result = await orderService.checkout(data);
+            order = result.data;
+            clientSecret = order?.client_secret;
+        }
+
+        if (isStripeCard.value && clientSecret && stripe && cardElement) {
+            const {error, paymentIntent} = await stripe.confirmCardPayment(clientSecret, {
+                payment_method: {
+                    card: cardElement,
+                    billing_details: {
+                        name: form.value.customer_name,
+                        email: form.value.customer_email,
+                    },
+                },
+            });
+
+            if (error) {
+                paymentError.value = error.message;
+                pendingOrder.value = {order, clientSecret};
+                orderResult.value = {
+                    ...order,
+                    payment_status: 'failed',
+                };
+            } else if (paymentIntent.status === 'succeeded') {
+                pendingOrder.value = null;
+                await orderService.confirmPayment(order.id, {
+                    customer_name: form.value.customer_name,
+                    customer_email: form.value.customer_email,
+                    customer_cpf_cnpj: form.value.customer_cpf_cnpj.replace(/\D/g, ''),
+                    customer_phone: form.value.customer_phone.replace(/\D/g, ''),
+                });
+                orderResult.value = {
+                    ...order,
+                    payment_status: 'paid',
+                };
+            } else {
+                pendingOrder.value = null;
+                orderResult.value = {
+                    ...order,
+                    payment_status: paymentIntent.status,
+                };
+            }
+        } else {
+            pendingOrder.value = null;
+            orderResult.value = order;
+        }
     } catch (error) {
         console.error('Erro no checkout:', error);
     } finally {
@@ -112,9 +218,18 @@ async function submitOrder() {
 
 onMounted(async () => {
     try {
-        const products = await productService.getAll();
+        const [products, checkoutConfig] = await Promise.all([
+            productService.getAll(),
+            orderService.getCheckoutConfig(),
+        ]);
+
         const productId = parseInt(route.params.id);
         product.value = products.find(p => p.id === productId) || null;
+
+        if (checkoutConfig.stripe_publishable_key) {
+            stripe = await loadStripe(checkoutConfig.stripe_publishable_key);
+            setTimeout(mountStripeCard, 100);
+        }
     } finally {
         loading.value = false;
     }
@@ -299,8 +414,21 @@ onMounted(async () => {
                         </div>
                     </div>
 
-                    <!-- Credit card fields -->
-                    <div v-if="showCardFields" class="card mb-3">
+                    <!-- Stripe Card Element -->
+                    <div v-if="isStripeCard" class="card mb-3">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="mdi mdi-credit-card-outline me-1"/>
+                                Dados do Cartao
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="card-element" class="form-control" style="padding: 12px; height: auto;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Non-Stripe card fields (Asaas credit card) -->
+                    <div v-else-if="showCardFields" class="card mb-3">
                         <div class="card-header">
                             <h5 class="card-title mb-0">
                                 <i class="mdi mdi-credit-card-outline me-1"/>
@@ -423,18 +551,64 @@ onMounted(async () => {
                     <!-- Botoes -->
                 </form>
 
-                <!-- Resultado do pedido -->
-                <div v-if="orderResult" class="card border-success">
+                <!-- Resultado do pedido — Pagamento aprovado -->
+                <div v-if="orderResult && orderResult.payment_status === 'paid'" class="card border-success">
                     <div class="card-body text-center py-4">
                         <i class="mdi mdi-check-circle text-success" style="font-size: 3rem;"></i>
-                        <h5 class="mt-3">Pedido #{{ orderResult.data?.id }} criado!</h5>
+                        <h5 class="mt-3">Pedido #{{ orderResult.id }} — Pagamento Aprovado!</h5>
                         <p class="text-muted mb-2">
-                            Status: <span class="badge bg-warning-subtle text-warning">{{ orderResult.data?.status }}</span>
-                            &middot; Gateway: <span class="badge bg-info-subtle text-info">{{ orderResult.data?.gateway }}</span>
-                            &middot; Meio: <span class="badge bg-primary-subtle text-primary">{{ orderResult.data?.payment_method }}</span>
+                            Status:
+                            <span class="badge bg-success-subtle text-success">Pago</span>
+                            &middot; Gateway:
+                            <span class="badge bg-info-subtle text-info">{{ orderResult.gateway }}</span>
+                            &middot; Meio:
+                            <span class="badge bg-primary-subtle text-primary">{{ orderResult.payment_method }}</span>
+                        </p>
+                        <div class="d-flex justify-content-center gap-2 mt-3">
+                            <router-link to="/" class="btn btn-soft-primary">
+                                Comprar outro produto
+                            </router-link>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resultado do pedido — Pagamento falhou -->
+                <div v-else-if="orderResult && orderResult.payment_status === 'failed'" class="card border-danger">
+                    <div class="card-body text-center py-4">
+                        <i class="mdi mdi-close-circle text-danger" style="font-size: 3rem;"></i>
+                        <h5 class="mt-3">Pedido #{{ orderResult.id }} — Pagamento Recusado</h5>
+                        <p class="text-danger mb-2" v-if="paymentError">
+                            {{ paymentError }}
+                        </p>
+                        <p class="text-muted mb-2">
+                            Status:
+                            <span class="badge bg-danger-subtle text-danger">Falhou</span>
+                            &middot; Gateway:
+                            <span class="badge bg-info-subtle text-info">{{ orderResult.gateway }}</span>
+                        </p>
+                        <div class="d-flex justify-content-center gap-2 mt-3">
+                            <router-link to="/" class="btn btn-soft-primary">
+                                Tentar novamente
+                            </router-link>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resultado do pedido — Outros gateways / status pendente -->
+                <div v-else-if="orderResult" class="card border-warning">
+                    <div class="card-body text-center py-4">
+                        <i class="mdi mdi-clock-outline text-warning" style="font-size: 3rem;"></i>
+                        <h5 class="mt-3">Pedido #{{ orderResult.id }} criado!</h5>
+                        <p class="text-muted mb-2">
+                            Status:
+                            <span class="badge bg-warning-subtle text-warning">{{ orderResult.status }}</span>
+                            &middot; Gateway:
+                            <span class="badge bg-info-subtle text-info">{{ orderResult.gateway }}</span>
+                            &middot; Meio:
+                            <span class="badge bg-primary-subtle text-primary">{{ orderResult.payment_method }}</span>
                         </p>
                         <p class="text-muted">
-                            O pagamento esta sendo processado em background pelo job <code>CreatePaymentCharge</code>.
+                            O pagamento esta sendo processado.
                         </p>
                         <div class="d-flex justify-content-center gap-2 mt-3">
                             <router-link to="/" class="btn btn-soft-primary">

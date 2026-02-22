@@ -18,12 +18,12 @@ class PaymentNormalizationTest extends TestCase
         $timestamp = 1708617600; // 2024-02-22 16:00:00 UTC
 
         $payload = [
-            'type' => 'checkout.session.completed',
+            'type' => 'payment_intent.succeeded',
             'data' => [
                 'object' => [
-                    'payment_intent' => 'pi_abc123',
-                    'status' => 'complete',
-                    'amount_total' => 2999,
+                    'id' => 'pi_abc123',
+                    'status' => 'succeeded',
+                    'amount' => 2999,
                     'created' => $timestamp,
                 ],
             ],
@@ -74,9 +74,9 @@ class PaymentNormalizationTest extends TestCase
         $stripeNormalized = $stripe->normalizeWebhookPayload([
             'data' => [
                 'object' => [
-                    'payment_intent' => 'pi_test',
-                    'status' => 'complete',
-                    'amount_total' => 1000,
+                    'id' => 'pi_test',
+                    'status' => 'succeeded',
+                    'amount' => 1000,
                     'created' => time(),
                 ],
             ],

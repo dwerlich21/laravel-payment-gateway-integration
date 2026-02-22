@@ -41,7 +41,7 @@ class CheckoutTest extends TestCase
             ->once()
             ->andReturn([
                 'external_id' => 'pi_stripe_test_123',
-                'checkout_url' => 'https://checkout.stripe.com/test',
+                'client_secret' => 'pi_stripe_test_123_secret_abc',
                 'status' => 'pending',
             ]);
 

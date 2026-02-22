@@ -39,7 +39,7 @@ class WebhookController
 
         Log::info('[Webhook] Stripe assinatura válida, despachando job', [
             'type' => $request->input('type'),
-            'session_id' => $request->input('data.object.id'),
+            'object_id' => $request->input('data.object.id'),
         ]);
 
         ProcessPaymentWebhook::dispatch('stripe', $request->all());

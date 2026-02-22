@@ -39,6 +39,7 @@ Route::group(['prefix' => 'v1'], function () {
     */
     Route::get('checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+    Route::put('checkout/{order}/confirm', [CheckoutController::class, 'confirm'])->name('checkout.confirm');
 
     /*
     |--------------------------------------------------------------------------

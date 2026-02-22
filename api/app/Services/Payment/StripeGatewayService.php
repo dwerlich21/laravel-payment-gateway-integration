@@ -5,7 +5,6 @@ namespace App\Services\Payment;
 use App\Contracts\PaymentGatewayInterface;
 use App\Exceptions\PaymentException;
 use Illuminate\Http\Request;
-use Stripe\Checkout\Session as StripeSession;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\PaymentIntent;
 use Stripe\Stripe;
@@ -32,38 +31,26 @@ class StripeGatewayService implements PaymentGatewayInterface
     }
 
     /**
-     * Cria uma cobrança no Stripe via Checkout Session.
+     * Cria uma cobrança no Stripe via PaymentIntent.
      *
-     * Recebe os dados do pedido (amount, description, success_url, cancel_url)
-     * e cria uma sessão de checkout. Retorna o ID externo, URL de checkout e status.
+     * Recebe os dados do pedido (amount, description, currency, metadata)
+     * e cria um PaymentIntent. Retorna o ID externo, client_secret e status.
      */
     public function createCharge(array $data): array
     {
         try {
-            $session = StripeSession::create([
-                'mode' => 'payment',
-                'line_items' => [
-                    [
-                        'price_data' => [
-                            'currency' => $data['currency'] ?? 'brl',
-                            'product_data' => [
-                                'name' => $data['description'] ?? 'Pagamento',
-                            ],
-                            'unit_amount' => (int) round($data['amount'] * 100),
-                        ],
-                        'quantity' => 1,
-                    ],
-                ],
-                'success_url' => $data['success_url'] ?? config('app.url').'/pagamento/sucesso',
-                'cancel_url' => $data['cancel_url'] ?? config('app.url').'/pagamento/cancelado',
+            $paymentIntent = PaymentIntent::create([
+                'amount' => (int) round($data['amount'] * 100),
+                'currency' => $data['currency'] ?? 'brl',
+                'description' => $data['description'] ?? 'Pagamento',
                 'metadata' => array_merge($data['metadata'] ?? [], [
                     'order_id' => $data['order_id'] ?? null,
                 ]),
             ]);
 
             return [
-                'external_id' => $session->id,
-                'checkout_url' => $session->url,
+                'external_id' => $paymentIntent->id,
+                'client_secret' => $paymentIntent->client_secret,
                 'status' => 'pending',
             ];
         } catch (\Exception $e) {
@@ -75,26 +62,16 @@ class StripeGatewayService implements PaymentGatewayInterface
      * Consulta o status de uma cobrança no Stripe pelo ID do PaymentIntent.
      *
      * Mapeia os status do Stripe para o formato interno:
-     * succeeded → paid, canceled/expired → failed, demais → pending.
+     * succeeded → paid, canceled → failed, demais → pending.
      */
     public function getChargeStatus(string $externalId): string
     {
         try {
-            $session = StripeSession::retrieve($externalId);
+            $paymentIntent = PaymentIntent::retrieve($externalId);
 
-            if ($session->payment_intent) {
-                $paymentIntent = PaymentIntent::retrieve($session->payment_intent);
-
-                return match ($paymentIntent->status) {
-                    'succeeded' => 'paid',
-                    'canceled' => 'failed',
-                    default => 'pending',
-                };
-            }
-
-            return match ($session->status) {
-                'complete' => 'paid',
-                'expired' => 'failed',
+            return match ($paymentIntent->status) {
+                'succeeded' => 'paid',
+                'canceled' => 'failed',
                 default => 'pending',
             };
         } catch (\Exception $e) {
@@ -105,28 +82,30 @@ class StripeGatewayService implements PaymentGatewayInterface
     /**
      * Normaliza o payload do webhook do Stripe para o formato interno.
      *
-     * Extrai dados do evento checkout.session.completed: ID externo,
-     * status normalizado, valor, taxas, valor líquido e data de pagamento.
+     * Extrai dados do evento payment_intent: ID externo,
+     * status normalizado, valor e data de pagamento.
      */
     public function normalizeWebhookPayload(array $payload): array
     {
         try {
-            $session = $payload['data']['object'] ?? [];
+            $object = $payload['data']['object'] ?? [];
 
-            $status = match ($session['status'] ?? '') {
-                'complete' => 'paid',
-                'expired' => 'failed',
-                'open' => 'pending',
+            $status = match ($object['status'] ?? '') {
+                'succeeded' => 'paid',
+                'canceled' => 'failed',
+                'requires_payment_method' => 'failed',
                 default => 'pending',
             };
 
-            $amountTotal = ($session['amount_total'] ?? 0) / 100;
+            $amount = ($object['amount'] ?? 0) / 100;
 
             return [
-                'external_id' => $session['id'] ?? null,
+                'external_id' => $object['id'] ?? null,
                 'status' => $status,
-                'amount' => $amountTotal,
-                'paid_at' => isset($session['created']) ? date('Y-m-d H:i:s', $session['created']) : null,
+                'amount' => $amount,
+                'paid_at' => $status === 'paid' && isset($object['created'])
+                    ? date('Y-m-d H:i:s', $object['created'])
+                    : null,
             ];
         } catch (\Exception $e) {
             throw new PaymentException("Erro ao normalizar webhook do Stripe: {$e->getMessage()}");
